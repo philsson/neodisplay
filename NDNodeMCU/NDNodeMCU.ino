@@ -7,12 +7,13 @@
 
 #include "display.h"
 #include "mt.h"
+#include "config.h"
 
-const char* ssid = "****";
-const char* password = "****";
+//const char* ssid = "****";
+//const char* password = "****";
 
 WiFiUDP Udp;
-unsigned int localUdpPort = 4210;
+//unsigned int localUdpPort = 4210;
 
 Display display;
 
@@ -22,9 +23,9 @@ void setup()
 {
   Serial.begin(115200);
   Serial.println("Booting");
-  WiFi.hostname("pixeldisplay");
+  WiFi.hostname("NeoDisplay");
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
+  WiFi.begin(wifiSSID, wifiPassword);
 
   while (WiFi.status() != WL_CONNECTED)
   {
