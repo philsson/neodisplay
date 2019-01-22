@@ -1,8 +1,13 @@
+/*
+*  Display
+*/
 #pragma once
 
 #include <vector>
 
 #include <Adafruit_NeoPixel.h>
+
+#include "config.h"
 
 enum Mode {
     CLOCK = 0,
@@ -47,6 +52,8 @@ public:
 
     void test();
 
+    void disco();
+
     void setPixel(Pixel pixel);
 
     // TODO: Set to use "type of update"
@@ -64,4 +71,13 @@ private:
     std::vector<Pixel> m_pixels;
 
     Mode m_mode;
+
+    uint8_t m_width, m_height;
+
+    // x: 0 indexed x coordinate
+    // y: 0 indexed y coordinate
+    // Return: The index of the pixel corresponding to x, y
+    uint8_t getPixelFromXY(uint8_t x, uint8_t y);
+
+    void setRowColor(uint8_t x, uint32_t color);
 };

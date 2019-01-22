@@ -1,40 +1,57 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
-
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
+#include <Ticker.h>
 
+// Includes from this project
 #include "display.h"
 #include "mt.h"
-#include "config.h"
 
-//const char* ssid = "****";
-//const char* password = "****";
+Ticker ticker;
 
 WiFiUDP Udp;
-//unsigned int localUdpPort = 4210;
 
 Display display;
 
 DisplayParser displayParser(display);
 
+volatile unsigned long next;
+
+void flipLED()
+{
+  static bool ledStatus = true;
+
+  ledStatus = !ledStatus;
+  digitalWrite(LED_MAIN, ledStatus);
+}
+
+void timerCallback()
+{
+  flipLED();
+}
+
 void setup()
 {
+  pinMode(LED_MAIN, OUTPUT);
+  digitalWrite(LED_MAIN, HIGH);
   Serial.begin(115200);
   Serial.println("Booting");
   WiFi.hostname("NeoDisplay");
   WiFi.mode(WIFI_STA);
-  WiFi.begin(wifiSSID, wifiPassword);
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   while (WiFi.status() != WL_CONNECTED)
   {
     delay(500);
+    flipLED();
     Serial.print(".");
   }
+  digitalWrite(LED_MAIN, LOW);
   Serial.println(" connected");
 
-  Udp.begin(localUdpPort);
+  Udp.begin(UDP_PORT);
 
   String hostname = "NeoDisplayOTA";
   ArduinoOTA.setHostname((const char *)hostname.c_str());
@@ -43,26 +60,20 @@ void setup()
   Serial.println(WiFi.localIP());
 
   display.begin();
-
-  // TEST 
-  std::vector<Display::Pixel> pixels(4);
-  pixels[0].index = 0;
-  pixels[0].r = 255;
-  
-  pixels[1].index = 1;
-  pixels[1].g = 255;
-  
-  pixels[2].index = 2;
-  pixels[2].b = 255;
-  
-  pixels[3].index = 3;
-  pixels[3].r = 255;
-  pixels[3].g = 255;
-  pixels[3].b = 255;
-  display.setPixels(pixels);
   display.setBrightness(15);
+
   display.test();
+  display.disco();
   display.clear();
+
+  // Checking for OTA upgrade before turning on Interrupts
+  // Not tested if this is possible to time
+  for (int i = 0; i < 100; i++)
+  {
+    ArduinoOTA.handle();
+  }
+  
+  ticker.attach_ms(LOOPTIME, timerCallback);
 }
 
 void loop()

@@ -1,7 +1,5 @@
 #include "display.h"
 
-#define NUM_PIXELS 256
-#define PIN_PIXELS 14
 
 Display::Display()
 //   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
@@ -11,6 +9,8 @@ Display::Display()
 : m_strip(Adafruit_NeoPixel(NUM_PIXELS, PIN_PIXELS, NEO_GRB + NEO_KHZ800))
 , m_brightness(100)
 , m_pixels(NUM_PIXELS, Display::Pixel())
+, m_width(WIDTH)
+, m_height(HEIGHT)
 {
     setBrightness(m_brightness);
 }
@@ -27,7 +27,7 @@ void Display::update()
 
 void Display::setBrightness(const uint8_t b)
 {
-    m_brightness = b;
+    m_brightness = constrain(b, 0, MAX_BRIGHTNESS);
     m_strip.setBrightness(b);
     update();
 }
@@ -44,34 +44,52 @@ void Display::clear()
 
 void Display::test()
 {
-    int i;
-    for (i = 0; i < NUM_PIXELS; i++)
+    uint8_t t = 50;
+    int x;
+    for (x = 0; x < m_width; x++)
     {
-        m_strip.setPixelColor(i, m_strip.Color(255, 0, 0));
+        setRowColor(x, m_strip.Color(255, 0, 0));
         m_strip.show();
-        delay(10);
+        delay(t);
     }
 
-    for (i = NUM_PIXELS - 1; i >= 0; i--)
+    for (x = m_width - 1; x >= 0; x--)
     {
-        m_strip.setPixelColor(i, m_strip.Color(0, 255, 0));
+        setRowColor(x, m_strip.Color(0, 255, 0));
         m_strip.show();
-        delay(10);
+        delay(t);
     }
 
-    for (i = 0; i < NUM_PIXELS; i++)
+    for (x = 0; x < m_width; x++)
     {
-        m_strip.setPixelColor(i, m_strip.Color(0, 0, 255));
+        setRowColor(x, m_strip.Color(0, 0, 255));
         m_strip.show();
-        delay(10);
+        delay(t);
     }
 
-    for (i = NUM_PIXELS - 1; i >= 0; i--)
+    for (x = m_width - 1; x >= 0; x--)
     {
-        m_strip.setPixelColor(i, m_strip.Color(0, 0, 0));
+        setRowColor(x, m_strip.Color(0, 0, 0));
         m_strip.show();
-        delay(10);
+        delay(t);
     }
+}
+
+void Display::disco()
+{
+  std::vector<Display::Pixel> pixels(NUM_PIXELS);
+  for (int k = 0; k < 100; k++)
+  {
+    for (int i = 0; i < NUM_PIXELS; i++)
+    {  
+        pixels[i].index = i;
+        pixels[i].r = random(0, 255);
+        pixels[i].g = random(0, 255);
+        pixels[i].b = random(0, 255);
+    }
+    setPixels(pixels);
+    delay(10);
+  }
 }
 
 void Display::setPixel(Display::Pixel pixel)
@@ -101,4 +119,24 @@ void Display::setMode(Mode mode)
 Mode Display::getMode()
 {
     return m_mode;
+}
+
+uint8_t Display::getPixelFromXY(uint8_t x, uint8_t y)
+{
+    // TODO: Append more scenarios when needed
+    int index = 0;
+    if (UPPER_LEFT == 0)
+    {
+        uint8_t offsetY = (x % 2 == 0 ? y : LOWER_LEFT - y);
+        return constrain(x * (LOWER_LEFT + 1) + offsetY, 0, NUM_PIXELS - 1);
+    }
+}
+
+void Display::setRowColor(uint8_t x, uint32_t color)
+{
+    for (int y = 0; y < m_height; y++)
+    {
+        int index = getPixelFromXY(x, y);
+        m_strip.setPixelColor(index, color);
+    }
 }
