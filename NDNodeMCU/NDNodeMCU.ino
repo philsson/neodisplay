@@ -7,11 +7,15 @@
 
 // Includes from this project
 #include "display.h"
+#include "clock.h"
 #include "mt.h"
 
-Ticker ticker;
+Ticker ticker, clockTicker;
 
 WiFiUDP Udp;
+WiFiUDP ntpUDP;
+
+Clock clock(ntpUDP, TIMEZONE);
 
 Display display;
 
@@ -30,6 +34,20 @@ void flipLED()
 void timerCallback()
 {
   flipLED();
+  Clock::MyTime time = clock.getTime();
+
+  //display.setRowColor(time.hour, 255 << 8);
+  display.clear();
+  display.setRowColor(time.second % WIDTH, 0, random(0, 255), random(0, 255));
+  display.setRowColor(time.minute % WIDTH, 255, 0, 255);
+  display.setRowColor(time.hour, random(0, 255), 255, 255);
+  display.update();
+}
+
+void clockISR()
+{
+  clock.tick();
+  Serial.printf("%d:%d:%d\n", clock.getTime().hour, clock.getTime().minute, clock.getTime().second);
 }
 
 void setup()
@@ -53,6 +71,9 @@ void setup()
 
   Udp.begin(UDP_PORT);
 
+  clock.begin();
+  clock.update();
+
   String hostname = "NeoDisplayOTA";
   ArduinoOTA.setHostname((const char *)hostname.c_str());
   ArduinoOTA.begin();
@@ -74,6 +95,7 @@ void setup()
   }
   
   ticker.attach_ms(LOOPTIME, timerCallback);
+  clockTicker.attach_ms(1e3, clockISR);
 }
 
 void loop()
@@ -82,9 +104,12 @@ void loop()
 
   int packetSize = Udp.parsePacket();
   if (packetSize)
-  for (int i = 0; i < packetSize; i++)
   {
-    uint8_t newByte = Udp.read();
-    displayParser.parse(newByte);
+    for (int i = 0; i < packetSize; i++)
+    {
+      uint8_t newByte = Udp.read();
+      displayParser.parse(newByte);
+    }
   }
+  //clock.update();
 }

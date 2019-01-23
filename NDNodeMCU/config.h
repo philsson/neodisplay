@@ -28,5 +28,8 @@
 /* Timers */
 #define LOOPTIME 20
 
+/* Clock */
+#define TIMEZONE 1
+
 /* LEDs */
 #define LED_MAIN D0
