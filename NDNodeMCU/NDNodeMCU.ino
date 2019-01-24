@@ -9,6 +9,7 @@
 #include "display.h"
 #include "clock.h"
 #include "mt.h"
+#include "graphics.h"
 
 Ticker ticker, clockTicker;
 
@@ -33,14 +34,16 @@ void flipLED()
 
 void timerCallback()
 {
+  // Toggle the LED on the NodeMCU
   flipLED();
-  Clock::MyTime time = clock.getTime();
 
-  //display.setRowColor(time.hour, 255 << 8);
+  
+  // TEMP:
+  // TODO: Here we will actuate depending on the mode
+  
+  // Repaint the screen with new clock update
   display.clear();
-  display.setRowColor(time.second % WIDTH, 0, random(0, 255), random(0, 255));
-  display.setRowColor(time.minute % WIDTH, 255, 0, 255);
-  display.setRowColor(time.hour, random(0, 255), 255, 255);
+  plotClock(clock, display);
   display.update();
 }
 
