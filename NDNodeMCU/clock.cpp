@@ -6,7 +6,8 @@ Clock::Clock(UDP& ntpUdp, int timezone)
 , m_time()
 , m_timeZone(timezone)
 {
-    m_timeClient.setTimeOffset(m_timeZone);
+    // "setTimeOffset" does not do anything!?
+    //m_timeClient.setTimeOffset(m_timeZone);
 }
 
 void Clock::begin()
@@ -28,7 +29,7 @@ void Clock::tick()
     }
 }
 
-const Clock::MyTime& Clock::getTime()
+const Clock::MyTime& Clock::getTime() const
 {
     return m_time;
 }
@@ -44,6 +45,9 @@ void Clock::update()
             m_time.hour = m_timeClient.getHours();
             m_time.minute = m_timeClient.getMinutes();
             m_time.second = m_timeClient.getSeconds();
+
+            // Bad fix for timezone (Guess it won't handle summertime)
+            m_time.hour = (m_time.hour + m_timeZone) % 24;
             return;
         }
         else

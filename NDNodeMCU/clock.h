@@ -27,7 +27,7 @@ public:
 
     void tick();
 
-    const MyTime& getTime();
+    const MyTime& getTime() const;
 
     void update();
 
