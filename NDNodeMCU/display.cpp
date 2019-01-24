@@ -34,9 +34,9 @@ void Display::setBrightness(const uint8_t b)
 
 void Display::clear()
 {
-    m_pixels.clear();
     for (int i = 0; i < NUM_PIXELS; i++)
     {
+        m_pixels[i] = Pixel(i, 0, 0, 0);
         m_strip.setPixelColor(i, 0, 0, 0);
     }
     update();
@@ -49,28 +49,28 @@ void Display::test()
     for (x = 0; x < m_width; x++)
     {
         setRowColor(x, m_strip.Color(255, 0, 0));
-        m_strip.show();
+        update();
         delay(t);
     }
 
     for (x = m_width - 1; x >= 0; x--)
     {
         setRowColor(x, m_strip.Color(0, 255, 0));
-        m_strip.show();
+        update();
         delay(t);
     }
 
     for (x = 0; x < m_width; x++)
     {
         setRowColor(x, m_strip.Color(0, 0, 255));
-        m_strip.show();
+        update();
         delay(t);
     }
 
     for (x = m_width - 1; x >= 0; x--)
     {
         setRowColor(x, m_strip.Color(0, 0, 0));
-        m_strip.show();
+        update();
         delay(t);
     }
 }
@@ -107,7 +107,6 @@ void Display::setPixels(std::vector<Display::Pixel> pixels)
     {        
         setPixel(*it);
     }
-    update();
 }
 
 void Display::setMode(Mode mode)
@@ -123,13 +122,23 @@ Mode Display::getMode()
 
 uint8_t Display::getPixelFromXY(uint8_t x, uint8_t y)
 {
-    // TODO: Append more scenarios when needed
     int index = 0;
     if (UPPER_LEFT == 0)
     {
         uint8_t offsetY = (x % 2 == 0 ? y : LOWER_LEFT - y);
         return constrain(x * (LOWER_LEFT + 1) + offsetY, 0, NUM_PIXELS - 1);
     }
+}
+
+void Display::setPixelColor(uint8_t x, uint8_t y, uint32_t color)
+{
+    int index = getPixelFromXY(x, y);
+    m_strip.setPixelColor(index, color);
+}
+
+void Display::setPixelColor(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b)
+{
+    setPixelColor(x, y, m_strip.Color(r, g, b));
 }
 
 void Display::setRowColor(uint8_t x, uint32_t color)
@@ -139,4 +148,9 @@ void Display::setRowColor(uint8_t x, uint32_t color)
         int index = getPixelFromXY(x, y);
         m_strip.setPixelColor(index, color);
     }
+}
+
+void Display::setRowColor(uint8_t x, uint8_t r, uint8_t g, uint8_t b)
+{
+    setRowColor(x, m_strip.Color(r, g, b));
 }
