@@ -90,7 +90,7 @@ bool DisplayParser::parseMode(const int index, const int packetSize, const uint8
 
     //Serial.printf("Mode received. Mode: %d\n", modePkt.mode);
 
-    m_display.setMode((Mode)modePkt.mode);
+    m_display.setMode((Display::Mode)modePkt.mode);
 
     return true;
 }
@@ -178,5 +178,5 @@ void DisplayParser::actuateCommand(Command command, const uint8_t value)
 
 void DisplayParser::actuateDisplay(DisplayUpdate update, const std::vector<Display::Pixel>& pixels)
 {
-    m_display.setPixels(pixels);
+    m_display.setPixels(pixels, Display::FOREGROUND, Display::PARTIAL);
 }

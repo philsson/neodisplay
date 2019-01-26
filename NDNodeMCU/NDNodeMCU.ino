@@ -42,9 +42,8 @@ void timerCallback()
   // TODO: Here we will actuate depending on the mode
   
   // Repaint the screen with new clock update
-  display.clear();
   plotClock(clock, display);
-  display.update();
+  display.draw();
 }
 
 void clockISR()

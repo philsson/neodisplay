@@ -30,7 +30,11 @@ class DisplayEnums:
     class DisplayUpdate:
         PARTIAL = 0
         FULL = 1
-        PERMANENT = 2
+
+    class Layer:
+        BACKGROUND = 0
+        MIDLAYER = 1
+        FOREGROUND = 2
 
 
 # Header

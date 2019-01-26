@@ -8,7 +8,7 @@ Display::Display()
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 : m_strip(Adafruit_NeoPixel(NUM_PIXELS, PIN_PIXELS, NEO_GRB + NEO_KHZ800))
 , m_brightness(100)
-, m_pixels(NUM_PIXELS, Display::Pixel())
+, m_layers(3, Display::PixelVec())
 , m_width(WIDTH)
 , m_height(HEIGHT)
 {
@@ -20,8 +20,33 @@ void Display::begin()
     m_strip.begin();
 }
 
-void Display::update()
+void Display::setMode(Mode mode)
 {
+    m_mode = mode;
+    // TODO: Some other stuff
+}
+
+Display::Mode Display::getMode()
+{
+    return m_mode;
+}
+
+void Display::draw()
+{
+    // TODO: Optimize by calculating the hole display beforehand. Avoiding
+    //       multiple writes to same pixel before plotting
+
+    m_strip.clear();
+    for (LayersIter layerIt = m_layers.begin(); layerIt != m_layers.end(); layerIt++)
+    {
+        for (PixelVecIter it = layerIt->begin(); it != layerIt->end(); it++)
+        {
+            if (it->r | it->g | it->b)
+            {   // Don't plot (Or erase if higher layer) when all colors are 0
+                m_strip.setPixelColor(it->index, it->r, it->g, it->b);
+            }
+        }
+    }
     m_strip.show();
 }
 
@@ -29,17 +54,24 @@ void Display::setBrightness(const uint8_t b)
 {
     m_brightness = constrain(b, 0, MAX_BRIGHTNESS);
     m_strip.setBrightness(b);
-    update();
+    draw();
 }
 
-void Display::clear()
+void Display::clear(Display::Layer layer)
 {
-    for (int i = 0; i < NUM_PIXELS; i++)
+    if (layer == ALL)
     {
-        m_pixels[i] = Pixel(i, 0, 0, 0);
-        m_strip.setPixelColor(i, 0, 0, 0);
+        for (LayersIter layerIt = m_layers.begin(); layerIt != m_layers.end(); layerIt++)
+        {
+            layerIt->clear();
+        }
     }
-    update();
+    else
+    {
+        m_layers[layer].clear();
+    }
+    m_strip.clear();
+    draw();
 }
 
 void Display::test()
@@ -48,37 +80,39 @@ void Display::test()
     int x;
     for (x = 0; x < m_width; x++)
     {
-        setRowColor(x, m_strip.Color(255, 0, 0));
-        update();
+        setRow(x, m_strip.Color(255, 0, 0));
+        draw();
         delay(t);
     }
 
     for (x = m_width - 1; x >= 0; x--)
     {
-        setRowColor(x, m_strip.Color(0, 255, 0));
-        update();
+        setRow(x, m_strip.Color(0, 255, 0));
+        draw();
         delay(t);
     }
 
     for (x = 0; x < m_width; x++)
     {
-        setRowColor(x, m_strip.Color(0, 0, 255));
-        update();
+        setRow(x, m_strip.Color(0, 0, 255));
+        draw();
         delay(t);
     }
 
     for (x = m_width - 1; x >= 0; x--)
     {
-        setRowColor(x, m_strip.Color(0, 0, 0));
-        update();
+        setRow(x, m_strip.Color(0, 0, 0));
+        draw();
         delay(t);
     }
+
+    clear();
 }
 
 void Display::disco()
 {
-  std::vector<Display::Pixel> pixels(NUM_PIXELS);
-  for (int k = 0; k < 100; k++)
+  PixelVec pixels(NUM_PIXELS);
+  for (int k = 0; k < 10; k++)
   {
     for (int i = 0; i < NUM_PIXELS; i++)
     {  
@@ -88,36 +122,88 @@ void Display::disco()
         pixels[i].b = random(0, 255);
     }
     setPixels(pixels);
-    delay(10);
+    draw();
+    delay(100);
   }
 }
 
-void Display::setPixel(Display::Pixel pixel)
+void Display::setPixel(Display::Pixel pixel, 
+                       Display::Layer layer, 
+                       Display::Update draw)
 {
     if (pixel.index <= NUM_PIXELS)
     {
-        m_pixels[pixel.index] = pixel;
-        m_strip.setPixelColor(pixel.index, pixel.r, pixel.g, pixel.b);
+        if (layer != ALL)
+        {
+            for (PixelVecIter it = m_layers[layer].begin(); it != m_layers[layer].end(); it++)
+            {
+                if (it->index == pixel.index)
+                {
+                    *it = pixel;
+                    return;
+                }
+            }
+            m_layers[layer].push_back(pixel);
+        }
     }
 }
 
-void Display::setPixels(std::vector<Display::Pixel> pixels)
+void Display::setPixel(uint8_t x, 
+                       uint8_t y, 
+                       uint32_t color, 
+                       Display::Layer layer,
+                       Display::Update draw)
 {
-    for (std::vector<Pixel>::iterator it = pixels.begin(); it != pixels.end(); it++)
+    uint8_t index = getPixelFromXY(x, y);
+    setPixel(pixelFromPackedColor((uint8_t)index, color), layer, draw);
+}
+
+void Display::setPixel(uint8_t x, 
+                       uint8_t y, 
+                       uint8_t r, 
+                       uint8_t g, 
+                       uint8_t b, 
+                       Display::Layer layer,
+                       Display::Update draw)
+{
+    int index = getPixelFromXY(x, y);
+    setPixel(Display::Pixel(index, r, g, b), layer, draw);
+}
+
+void Display::setPixels(Display::PixelVec pixels, 
+                        Display::Layer layer, 
+                        Display::Update draw)
+{
+    if (draw == FULL)
+    {
+        m_layers[layer].clear();
+    }
+    for (PixelVecIter it = pixels.begin(); it != pixels.end(); it++)
     {        
-        setPixel(*it);
+        setPixel(*it, layer, PARTIAL);
     }
 }
 
-void Display::setMode(Mode mode)
+void Display::setRow(uint8_t x, 
+                     uint32_t color, 
+                     Display::Layer layer,
+                     Display::Update draw)
 {
-    m_mode = mode;
-    // TODO: Some other stuff
+    for (int y = 0; y < m_height; y++)
+    {
+        int index = getPixelFromXY(x, y);
+        setPixel(pixelFromPackedColor(index, color), layer, draw);
+    }
 }
 
-Mode Display::getMode()
+void Display::setRow(uint8_t x, 
+                     uint8_t r, 
+                     uint8_t g, 
+                     uint8_t b, 
+                     Display::Layer layer,
+                     Display::Update draw)
 {
-    return m_mode;
+    setRow(x, m_strip.Color(r, g, b), layer);
 }
 
 uint8_t Display::getPixelFromXY(uint8_t x, uint8_t y)
@@ -128,29 +214,13 @@ uint8_t Display::getPixelFromXY(uint8_t x, uint8_t y)
         uint8_t offsetY = (x % 2 == 0 ? y : LOWER_LEFT - y);
         return constrain(x * (LOWER_LEFT + 1) + offsetY, 0, NUM_PIXELS - 1);
     }
+    return 0;
 }
 
-void Display::setPixelColor(uint8_t x, uint8_t y, uint32_t color)
+Display::Pixel Display::pixelFromPackedColor(uint8_t index, uint32_t color)
 {
-    int index = getPixelFromXY(x, y);
-    m_strip.setPixelColor(index, color);
-}
-
-void Display::setPixelColor(uint8_t x, uint8_t y, uint8_t r, uint8_t g, uint8_t b)
-{
-    setPixelColor(x, y, m_strip.Color(r, g, b));
-}
-
-void Display::setRowColor(uint8_t x, uint32_t color)
-{
-    for (int y = 0; y < m_height; y++)
-    {
-        int index = getPixelFromXY(x, y);
-        m_strip.setPixelColor(index, color);
-    }
-}
-
-void Display::setRowColor(uint8_t x, uint8_t r, uint8_t g, uint8_t b)
-{
-    setRowColor(x, m_strip.Color(r, g, b));
+    return Display::Pixel(index,
+                         (uint8_t)(color >> 16),
+                         (uint8_t)(color >>  8),
+                         (uint8_t)color);
 }

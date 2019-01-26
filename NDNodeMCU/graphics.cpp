@@ -14,7 +14,7 @@ void plotNum(Display& display, uint8_t num, uint8_t xPos, uint8_t yPos, uint32_t
         {
             if (row >> (FONT_WIDTH - 1 - x) & 0x01)
             {
-                display.setPixelColor(xPos + x, yPos + y, color);
+                display.setPixel(xPos + x, yPos + y, color, Display::MIDLAYER, Display::PARTIAL);
             }
         }
     }
@@ -26,13 +26,14 @@ void plotColumn(Display& display, uint8_t column, uint8_t xPos, uint32_t color)
     {
         if (column >> (FONT_HEIGHT - 1 - y) & 0x01)
         {
-            display.setPixelColor(xPos, y, color);
+            display.setPixel(xPos, y, color, Display::MIDLAYER, Display::PARTIAL);
         }
     }
 }
 
 void plotClock(const Clock& clock, Display& display)
 {
+    display.clear(Display::MIDLAYER);
     const Clock::MyTime time = clock.getTime();
 
     static const uint8_t separator = B01100110;
