@@ -61,6 +61,20 @@ class DisplayDataSender:
 
         self.send_packet(header, payload)
 
+    def set_brightness(self, value):
+
+        payload = mt.Command(
+            Command=mt.DisplayEnums.Command.BRIGHTNESS,
+            Value=value
+        )
+
+        header = mt.Header(
+            MessageDataType=mt.DisplayEnums.PacketType.COMMAND,
+            MessageDataSize=len(payload)
+        )
+
+        self.send_packet(header, payload)
+
 
     def update(self):
 
@@ -148,7 +162,7 @@ def main():
     sender = DisplayDataSender("192.168.1.110", 4210)
 
     #sender.update()
-
+    
     while True:
         sender.walk_pixel()
         sleep(0.03)
