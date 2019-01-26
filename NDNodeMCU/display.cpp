@@ -6,7 +6,7 @@ Display::Display()
 //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
-: m_strip(Adafruit_NeoPixel(NUM_PIXELS, PIN_PIXELS, NEO_GRB + NEO_KHZ800))
+: Adafruit_NeoPixel(NUM_PIXELS, PIN_PIXELS, NEO_GRB + NEO_KHZ800)
 , m_brightness(100)
 , m_layers(3, Display::PixelVec())
 , m_width(WIDTH)
@@ -17,7 +17,7 @@ Display::Display()
 
 void Display::begin()
 {
-    m_strip.begin();
+    Adafruit_NeoPixel::begin();
 }
 
 void Display::setMode(Mode mode)
@@ -36,25 +36,24 @@ void Display::draw()
     // TODO: Optimize by calculating the hole display beforehand. Avoiding
     //       multiple writes to same pixel before plotting
 
-    m_strip.clear();
+    Adafruit_NeoPixel::clear();
     for (LayersIter layerIt = m_layers.begin(); layerIt != m_layers.end(); layerIt++)
     {
         for (PixelVecIter it = layerIt->begin(); it != layerIt->end(); it++)
         {
             if (it->r | it->g | it->b)
             {   // Don't plot (Or erase if higher layer) when all colors are 0
-                m_strip.setPixelColor(it->index, it->r, it->g, it->b);
+                Adafruit_NeoPixel::setPixelColor(it->index, it->r, it->g, it->b);
             }
         }
     }
-    m_strip.show();
+    Adafruit_NeoPixel::show();
 }
 
 void Display::setBrightness(const uint8_t b)
 {
     m_brightness = constrain(b, 0, MAX_BRIGHTNESS);
-    m_strip.setBrightness(b);
-    draw();
+    Adafruit_NeoPixel::setBrightness(b);
 }
 
 void Display::clear(Display::Layer layer)
@@ -70,7 +69,7 @@ void Display::clear(Display::Layer layer)
     {
         m_layers[layer].clear();
     }
-    m_strip.clear();
+    Adafruit_NeoPixel::clear();
     draw();
 }
 
@@ -80,28 +79,28 @@ void Display::test()
     int x;
     for (x = 0; x < m_width; x++)
     {
-        setRow(x, m_strip.Color(255, 0, 0));
+        setRow(x, Adafruit_NeoPixel::Color(255, 0, 0));
         draw();
         delay(t);
     }
 
     for (x = m_width - 1; x >= 0; x--)
     {
-        setRow(x, m_strip.Color(0, 255, 0));
+        setRow(x, Adafruit_NeoPixel::Color(0, 255, 0));
         draw();
         delay(t);
     }
 
     for (x = 0; x < m_width; x++)
     {
-        setRow(x, m_strip.Color(0, 0, 255));
+        setRow(x, Adafruit_NeoPixel::Color(0, 0, 255));
         draw();
         delay(t);
     }
 
     for (x = m_width - 1; x >= 0; x--)
     {
-        setRow(x, m_strip.Color(0, 0, 0));
+        setRow(x, Adafruit_NeoPixel::Color(0, 0, 0));
         draw();
         delay(t);
     }
@@ -203,7 +202,7 @@ void Display::setRow(uint8_t x,
                      Display::Layer layer,
                      Display::Update draw)
 {
-    setRow(x, m_strip.Color(r, g, b), layer);
+    setRow(x, Adafruit_NeoPixel::Color(r, g, b), layer);
 }
 
 uint8_t Display::getPixelFromXY(uint8_t x, uint8_t y)

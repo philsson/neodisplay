@@ -16,7 +16,7 @@
 //! Configuration in Config.h
 //! The display uses the Adafruit NeoPixel library to draw
 //! 
-class Display
+class Display : public Adafruit_NeoPixel
 {
 public:
     Display();
@@ -132,8 +132,6 @@ private:
     typedef PixelVec::iterator PixelVecIter;
     typedef std::vector< PixelVec > PixelVecVec;
     typedef PixelVecVec::iterator LayersIter;
-
-    Adafruit_NeoPixel m_strip;
 
     float m_brightness;
 
