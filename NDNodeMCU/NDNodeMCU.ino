@@ -22,8 +22,6 @@ Display display;
 
 DisplayParser displayParser(display);
 
-volatile unsigned long next;
-
 void flipLED()
 {
   static bool ledStatus = true;

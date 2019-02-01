@@ -1,4 +1,5 @@
 #include "mt.h"
+#include "config.h"
 
 DisplayParser::DisplayParser(Display& display)
 : m_display(display)
@@ -126,6 +127,8 @@ bool DisplayParser::parseDisplay(const int index, const int packetSize, const ui
     switch (index)
     {
     case 0:
+        // Parsing first byte; TypeOfUpdate
+        
         displayPkt.typeOfUpdate = byteIn;
         displayPkt.pixels.clear();
         displayPkt.numOfPixels = 0;
@@ -133,11 +136,14 @@ bool DisplayParser::parseDisplay(const int index, const int packetSize, const ui
         break;
     case 1:
     case 2:
+        // Parsing second and third byte; NumberOfPixelUpdates
+
         //Serial.printf("Prev numOfPixels: %d, index: %d\n", displayPkt.numOfPixels, index);
         displayPkt.numOfPixels = displayPkt.numOfPixels << 1 | byteIn;
         //Serial.printf("New  numOfPixels: %d\n", displayPkt.numOfPixels);
         break;
     default:
+        // Parsing pixels (We end up here many times. Until we have all pixels from numOfPixels)
         //Serial.printf("Processing pixel...\n");
         uint8_t innerIndex = (index - 3) % 4;
         pixelArr[innerIndex] = byteIn;
@@ -176,7 +182,8 @@ void DisplayParser::actuateCommand(Command command, const uint8_t value)
     }
 }
 
-void DisplayParser::actuateDisplay(DisplayUpdate update, const std::vector<Display::Pixel>& pixels)
+void DisplayParser::actuateDisplay(DisplayUpdate update, const Display::PixelVec& pixels)
 {
-    m_display.setPixels(pixels, Display::FOREGROUND, Display::PARTIAL);
+    // TODO: Scary cast to "update". Same is declared in both Display.h and mt.h
+    m_display.setPixels(pixels, Display::FOREGROUND, (Display::Update)update);
 }

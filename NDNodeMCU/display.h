@@ -15,7 +15,7 @@
 //! Display
 //! Configuration in Config.h
 //! The display uses the Adafruit NeoPixel library to draw
-//! 
+//! First set state of the display, then draw
 class Display : public Adafruit_NeoPixel
 {
 public:
@@ -91,41 +91,36 @@ public:
     void disco();
 
     void setPixel(Pixel pixel, 
-                  Layer layer = MIDLAYER,
-                  Update draw = PARTIAL);
+                  Layer layer = MIDLAYER);
 
-    //! Set the state (color) of a pixel in set layer
+    //! Set the color of a pixel in set layer
     void setPixel(uint8_t x, 
                   uint8_t y, 
                   uint32_t color, 
-                  Layer layer = MIDLAYER,
-                  Update draw = PARTIAL);
+                  Layer layer = MIDLAYER);
 
     void setPixel(uint8_t x, 
                   uint8_t y, 
                   uint8_t r, 
                   uint8_t g, 
                   uint8_t b, 
-                  Layer layer = MIDLAYER,
-                  Update draw = PARTIAL);
-
-    // TODO: Set to use "type of draw"
+                  Layer layer = MIDLAYER);
 
     void setPixels(std::vector<Pixel> pixels,
                   Layer layer = MIDLAYER,
-                  Update draw = FULL);
+                  Update update = FULL);
 
     void setRow(uint8_t x, 
                 uint32_t color, 
                 Layer layer = MIDLAYER,
-                Update draw = PARTIAL);
+                Update update = PARTIAL);
 
     void setRow(uint8_t x, 
                 uint8_t r, 
                 uint8_t g, 
                 uint8_t b, 
                 Layer layer = MIDLAYER,
-                Update draw = PARTIAL);
+                Update update = PARTIAL);
 
 private:
    

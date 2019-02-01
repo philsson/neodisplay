@@ -14,7 +14,7 @@ void plotNum(Display& display, uint8_t num, uint8_t xPos, uint8_t yPos, uint32_t
         {
             if (row >> (FONT_WIDTH - 1 - x) & 0x01)
             {
-                display.setPixel(xPos + x, yPos + y, color, Display::MIDLAYER, Display::PARTIAL);
+                display.setPixel(xPos + x, yPos + y, color, Display::MIDLAYER);
             }
         }
     }
@@ -26,7 +26,7 @@ void plotColumn(Display& display, uint8_t column, uint8_t xPos, uint32_t color)
     {
         if (column >> (FONT_HEIGHT - 1 - y) & 0x01)
         {
-            display.setPixel(xPos, y, color, Display::MIDLAYER, Display::PARTIAL);
+            display.setPixel(xPos, y, color, Display::MIDLAYER);
         }
     }
 }

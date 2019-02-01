@@ -70,7 +70,7 @@ private:
 
     void actuateCommand(Command command, const uint8_t value);
 
-    void actuateDisplay(DisplayUpdate update, const std::vector<Display::Pixel>& pixels);
+    void actuateDisplay(DisplayUpdate update, const Display::PixelVec& pixels);
 
     Display& m_display;
 };

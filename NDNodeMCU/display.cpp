@@ -127,8 +127,7 @@ void Display::disco()
 }
 
 void Display::setPixel(Display::Pixel pixel, 
-                       Display::Layer layer, 
-                       Display::Update draw)
+                       Display::Layer layer)
 {
     if (pixel.index <= NUM_PIXELS)
     {
@@ -150,11 +149,10 @@ void Display::setPixel(Display::Pixel pixel,
 void Display::setPixel(uint8_t x, 
                        uint8_t y, 
                        uint32_t color, 
-                       Display::Layer layer,
-                       Display::Update draw)
+                       Display::Layer layer)
 {
     uint8_t index = getPixelFromXY(x, y);
-    setPixel(pixelFromPackedColor((uint8_t)index, color), layer, draw);
+    setPixel(pixelFromPackedColor((uint8_t)index, color), layer);
 }
 
 void Display::setPixel(uint8_t x, 
@@ -162,36 +160,39 @@ void Display::setPixel(uint8_t x,
                        uint8_t r, 
                        uint8_t g, 
                        uint8_t b, 
-                       Display::Layer layer,
-                       Display::Update draw)
+                       Display::Layer layer)
 {
     int index = getPixelFromXY(x, y);
-    setPixel(Display::Pixel(index, r, g, b), layer, draw);
+    setPixel(Display::Pixel(index, r, g, b), layer);
 }
 
 void Display::setPixels(Display::PixelVec pixels, 
                         Display::Layer layer, 
-                        Display::Update draw)
+                        Display::Update update)
 {
-    if (draw == FULL)
+    if (update == FULL)
     {
         m_layers[layer].clear();
     }
     for (PixelVecIter it = pixels.begin(); it != pixels.end(); it++)
     {        
-        setPixel(*it, layer, PARTIAL);
+        setPixel(*it, layer);
     }
 }
 
 void Display::setRow(uint8_t x, 
                      uint32_t color, 
                      Display::Layer layer,
-                     Display::Update draw)
+                     Display::Update update)
 {
+    if (update == FULL)
+    {
+        m_layers[layer].clear();
+    }
     for (int y = 0; y < m_height; y++)
     {
         int index = getPixelFromXY(x, y);
-        setPixel(pixelFromPackedColor(index, color), layer, draw);
+        setPixel(pixelFromPackedColor(index, color), layer);
     }
 }
 
@@ -200,9 +201,9 @@ void Display::setRow(uint8_t x,
                      uint8_t g, 
                      uint8_t b, 
                      Display::Layer layer,
-                     Display::Update draw)
+                     Display::Update update)
 {
-    setRow(x, Adafruit_NeoPixel::Color(r, g, b), layer);
+    setRow(x, Adafruit_NeoPixel::Color(r, g, b), layer, update);
 }
 
 uint8_t Display::getPixelFromXY(uint8_t x, uint8_t y)
