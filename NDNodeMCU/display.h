@@ -25,6 +25,7 @@ public:
         CLOCK = 0,
         PULSE,
         GO_AROUND,
+        FADE,
     };
 
     enum Layer {
@@ -42,7 +43,8 @@ public:
 
     //! Content of one pixel
     typedef struct Pixel {
-        uint8_t index, r, g, b;
+        uint8_t index;
+        int r, g, b;
 
         Pixel()
         : index(0)
@@ -51,21 +53,92 @@ public:
         , b(0)
         {}
 
-        Pixel(uint8_t index_, uint8_t r_, uint8_t g_, uint8_t b_)
+        Pixel(uint8_t index_)
+        : index(index_)
+        , r(0)
+        , g(0)
+        , b(0)
+        {}
+
+        Pixel(uint8_t index_, int r_, int g_, int b_)
         : index(index_)
         , r(r_)
         , g(g_)
         , b(b_)
         {}
 
+        Pixel operator+=(const Pixel& rhs)
+        {
+            return Pixel(index, rhs.r, rhs.g, rhs.b);
+        }
+
+        //! Implemented for use with sorting
         bool operator==(const Pixel& rhs)
         {
             return index == rhs.index;
         }
 
+        bool operator!=(const Pixel& rhs)
+        {
+            return index != rhs.index ||
+                   r != rhs.r ||
+                   g != rhs.g ||
+                   b != rhs.b;
+        }
+
+        //! Implemented for use with sorting
         bool operator<(const Pixel& rhs)
         {
             return index < rhs.index;
+        }
+
+        Pixel operator/(const Pixel& rhs)
+        {
+            return Pixel(index,
+                         floor(r / (rhs.r == 0) ? 1 : rhs.r),
+                         floor(g / (rhs.g == 0) ? 1 : rhs.g),
+                         floor(b / (rhs.b == 0) ? 1 : rhs.b));
+        }
+
+        Pixel operator*(const Pixel& rhs)
+        {
+            return Pixel(index,
+                         floor(r * rhs.r),
+                         floor(g * rhs.g),
+                         floor(b * rhs.b));
+        }
+
+        Pixel operator/(float d)
+        {
+            return Pixel(index,
+                         round((float)r / d),
+                         round((float)g / d), 
+                         round((float)b / d));
+        }
+
+        Pixel operator*(float d)
+        {
+            return Pixel(index,
+                         round((float)r * d),
+                         round((float)g * d), 
+                         round((float)b * d));
+        }
+
+        Pixel operator-(const Pixel& rhs)
+        {
+            return Pixel(index,
+                         r - rhs.r,
+                         g - rhs.g,
+                         b - rhs.b);
+        }
+
+
+        Pixel operator+(const Pixel& rhs)
+        {
+            return Pixel(index,
+                         r + rhs.r,
+                         g + rhs.g,
+                         b + rhs.b);
         }
 
     } __attribute__ ((__packed__));
@@ -79,7 +152,9 @@ public:
     Mode getMode();
 
     //! After writing to the display this will actuate / draw
-    void draw();
+    //! Return: display fully updated. e.g. with "FADE" active
+    //!         it will take a few iterations
+    bool draw();
 
     //! @b: Brightness in range [0, 255]
     void setBrightness(const uint8_t b);
@@ -130,7 +205,9 @@ private:
 
     float m_brightness;
 
+    // TODO: Rename m_layers to current state?
     PixelVecVec m_layers;
+    PixelVecVec m_layersGoalState;
 
     Mode m_mode;
 
@@ -142,5 +219,12 @@ private:
     uint8_t getPixelFromXY(uint8_t x, uint8_t y);
 
     Pixel pixelFromPackedColor(uint8_t index, uint32_t color);
+
+    //! Clear a vector by setting default values (Keeps its size)
+    //! Creating our own function as the STD library is not
+    //! stable enough
+    void clearVec(PixelVec& pixelVec);
+
+    const bool almostEqualPixels(const Pixel& a, const Pixel& b) const;
 
 };

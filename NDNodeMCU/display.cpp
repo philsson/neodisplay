@@ -8,7 +8,9 @@ Display::Display()
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 : Adafruit_NeoPixel(NUM_PIXELS, PIN_PIXELS, NEO_GRB + NEO_KHZ800)
 , m_brightness(100)
-, m_layers(3, Display::PixelVec())
+, m_layers(3, Display::PixelVec(NUM_PIXELS, Pixel()))
+, m_layersGoalState(3, Display::PixelVec(NUM_PIXELS, Pixel()))
+, m_mode(FADE)
 , m_width(WIDTH)
 , m_height(HEIGHT)
 {
@@ -17,13 +19,29 @@ Display::Display()
 
 void Display::begin()
 {
+    for (LayersIter lIter = m_layers.begin(); lIter != m_layers.end(); lIter++)
+    {
+        int i = 0;
+        for (PixelVecIter vIter = lIter->begin(); vIter != lIter->end(); vIter++)
+        {
+            vIter->index = i++;
+        }
+    }
+    for (LayersIter lIter = m_layersGoalState.begin(); lIter != m_layersGoalState.end(); lIter++)
+    {
+        int i = 0;
+        for (PixelVecIter vIter = lIter->begin(); vIter != lIter->end(); vIter++)
+        {
+            vIter->index = i++;
+        }
+    }
+
     Adafruit_NeoPixel::begin();
 }
 
 void Display::setMode(Mode mode)
 {
     m_mode = mode;
-    // TODO: Some other stuff
 }
 
 Display::Mode Display::getMode()
@@ -31,10 +49,41 @@ Display::Mode Display::getMode()
     return m_mode;
 }
 
-void Display::draw()
+bool Display::draw()
 {
-    // TODO: Optimize by calculating the hole display beforehand. Avoiding
-    //       multiple writes to same pixel before plotting
+    static const float d = 0.08f;
+    bool fullyActuated = true;
+    for (int i = 0; i < m_layers.size() /* and m_layersGoalState.size() */; i++)
+    {
+        for (int k = 0; k < m_layers[i].size(); k++)
+        {
+            Pixel& currentState = m_layers[i][k];
+            Pixel& goalState = m_layersGoalState[i][k];
+            
+            if (currentState != goalState)
+            {
+                fullyActuated = false;
+
+                if (m_mode == FADE)
+                {
+                    if (almostEqualPixels(currentState, goalState))
+                    {
+                        currentState = goalState;
+                    }
+                    else
+                    {
+                        currentState = currentState*(1.0f-d) + goalState*d;
+                    }
+                }
+                else
+                {
+                    currentState = goalState;
+                }
+            }    
+        }
+    }
+
+    PixelVec pixels(NUM_PIXELS, Pixel());
 
     Adafruit_NeoPixel::clear();
     for (LayersIter layerIt = m_layers.begin(); layerIt != m_layers.end(); layerIt++)
@@ -43,11 +92,19 @@ void Display::draw()
         {
             if (it->r | it->g | it->b)
             {   // Don't plot (Or erase if higher layer) when all colors are 0
-                Adafruit_NeoPixel::setPixelColor(it->index, it->r, it->g, it->b);
+                pixels[it->index] = *it;
             }
         }
     }
+    for (PixelVecIter iter = pixels.begin(); iter != pixels.end(); iter++)
+    {
+        if (iter->r | iter->g | iter->b)
+        {
+            Adafruit_NeoPixel::setPixelColor(iter->index, iter->r, iter->g, iter->b);
+        }
+    }
     Adafruit_NeoPixel::show();
+    return fullyActuated;
 }
 
 void Display::setBrightness(const uint8_t b)
@@ -60,14 +117,14 @@ void Display::clear(Display::Layer layer)
 {
     if (layer == ALL)
     {
-        for (LayersIter layerIt = m_layers.begin(); layerIt != m_layers.end(); layerIt++)
+        for (LayersIter layerIt = m_layersGoalState.begin(); layerIt != m_layersGoalState.end(); layerIt++)
         {
-            layerIt->clear();
+            clearVec(*layerIt);
         }
     }
     else
     {
-        m_layers[layer].clear();
+        clearVec(m_layersGoalState[layer]);
     }
     Adafruit_NeoPixel::clear();
     draw();
@@ -75,7 +132,7 @@ void Display::clear(Display::Layer layer)
 
 void Display::test()
 {
-    uint8_t t = 50;
+    static const uint8_t t = 1000/LOOPTIME;
     int x;
     for (x = 0; x < m_width; x++)
     {
@@ -105,44 +162,52 @@ void Display::test()
         delay(t);
     }
 
+    for(int i = 0; i < 100; i++)
+    {
+        if (draw())
+        {
+            break;
+        }
+        delay(t);
+    };
+
     clear();
 }
 
 void Display::disco()
 {
+  static const uint8_t t = 1000/LOOPTIME;
+
   PixelVec pixels(NUM_PIXELS);
   for (int k = 0; k < 10; k++)
   {
-    for (int i = 0; i < NUM_PIXELS; i++)
+    int i = 0;
+    for (PixelVecIter iter = pixels.begin(); iter != pixels.end(); iter++)
     {  
-        pixels[i].index = i;
-        pixels[i].r = random(0, 255);
-        pixels[i].g = random(0, 255);
-        pixels[i].b = random(0, 255);
+        iter->index = i++;
+        iter->r = random(0, 255);
+        iter->g = random(0, 255);
+        iter->b = random(0, 255);
     }
     setPixels(pixels);
-    draw();
-    delay(100);
+
+    for(int i = 0; i < 10; i++)
+    {
+        if (draw())
+        {
+            break;
+        }
+        delay(t);
+    };
   }
 }
 
 void Display::setPixel(Display::Pixel pixel, 
                        Display::Layer layer)
 {
-    if (pixel.index <= NUM_PIXELS)
+    if (pixel.index <= NUM_PIXELS && layer != ALL)
     {
-        if (layer != ALL)
-        {
-            for (PixelVecIter it = m_layers[layer].begin(); it != m_layers[layer].end(); it++)
-            {
-                if (it->index == pixel.index)
-                {
-                    *it = pixel;
-                    return;
-                }
-            }
-            m_layers[layer].push_back(pixel);
-        }
+        m_layersGoalState[layer][pixel.index] = pixel;
     }
 }
 
@@ -172,7 +237,7 @@ void Display::setPixels(Display::PixelVec pixels,
 {
     if (update == FULL)
     {
-        m_layers[layer].clear();
+        clearVec(m_layersGoalState[layer]);
     }
     for (PixelVecIter it = pixels.begin(); it != pixels.end(); it++)
     {        
@@ -187,7 +252,7 @@ void Display::setRow(uint8_t x,
 {
     if (update == FULL)
     {
-        m_layers[layer].clear();
+        clearVec(m_layersGoalState[layer]);
     }
     for (int y = 0; y < m_height; y++)
     {
@@ -223,4 +288,28 @@ Display::Pixel Display::pixelFromPackedColor(uint8_t index, uint32_t color)
                          (uint8_t)(color >> 16),
                          (uint8_t)(color >>  8),
                          (uint8_t)color);
+}
+
+void Display::clearVec(PixelVec& pixelVec)
+{
+    // This should have worked?
+    // pixelVec.assign(pixelVec.size(), Pixel());
+
+    for (PixelVecIter iter = pixelVec.begin(); iter != pixelVec.end(); iter++)
+    {   
+        *iter = Pixel(iter->index);
+    }
+}
+
+const bool Display::almostEqualPixels(const Pixel& a, const Pixel& b) const
+{
+    // TODO: For some reason this condition does not seem satisfied for all cases 
+    //       even after a long time. For example in "disco()" where if using this
+    //       result as a condition we stay in an endless loop
+    static const uint8_t t = 2;
+    if (abs(a.r - b.r) > t || abs(a.g - b.g) > t || abs(a.b - b.b) > t  )
+    {
+        return false;
+    }
+    return true;
 }
