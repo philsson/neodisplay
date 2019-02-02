@@ -11,6 +11,8 @@
 #include "mt.h"
 #include "graphics.h"
 
+Settings config;
+
 Ticker ticker, clockTicker;
 
 WiFiUDP Udp;
@@ -69,6 +71,10 @@ void setup()
   }
   digitalWrite(LED_MAIN, LOW);
   Serial.println(" connected");
+
+  /* Read EEPROM */
+  config.load();
+  display.setMode((Display::Mode)config.display.mode);
 
   Udp.begin(UDP_PORT);
 

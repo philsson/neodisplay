@@ -10,7 +10,7 @@ Display::Display()
 , m_brightness(100)
 , m_layers(3, Display::PixelVec(NUM_PIXELS, Pixel()))
 , m_layersGoalState(3, Display::PixelVec(NUM_PIXELS, Pixel()))
-, m_mode(FADE)
+, m_mode(CLOCK)
 , m_width(WIDTH)
 , m_height(HEIGHT)
 {
@@ -42,6 +42,8 @@ void Display::begin()
 void Display::setMode(Mode mode)
 {
     m_mode = mode;
+    config.display.mode = mode;
+    config.save();
 }
 
 Display::Mode Display::getMode()

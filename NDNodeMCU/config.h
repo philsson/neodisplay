@@ -4,6 +4,8 @@
 */
 #pragma once
 
+#include <Arduino.h>
+
 
 /* WiFi / Network settings */
 #define UDP_PORT 4210
@@ -26,10 +28,43 @@
 #define MAX_BRIGHTNESS 150
 
 /* Timers */
-#define LOOPTIME 20
+#define LOOPTIME 20 // ms
 
 /* Clock */
 #define TIMEZONE 1
 
 /* LEDs */
 #define LED_MAIN D0
+
+/* EEPROM */
+#define EEPROM_SIZE 512
+
+
+class Settings 
+{
+public:
+
+    struct {
+        uint port = 4210;
+        char wifiSSID[20] = "";
+        char wifiPASS[20] = "";
+
+    } network;
+
+    struct {
+        uint8_t mode = 0;
+    } display;
+
+    Settings();
+
+    bool load();
+
+    bool save();
+
+private:
+
+    uint m_addrNetwork, m_addrDisplay;
+
+};
+
+extern Settings config;
