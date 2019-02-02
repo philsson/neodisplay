@@ -29,7 +29,7 @@ public:
 
     const MyTime& getTime() const;
 
-    void update();
+    bool update();
 
 private:
     NTPClient m_timeClient;

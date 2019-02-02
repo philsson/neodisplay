@@ -34,7 +34,7 @@ const Clock::MyTime& Clock::getTime() const
     return m_time;
 }
 
-void Clock::update()
+bool Clock::update()
 {
     Serial.println("Updating time from NTP");
     for (uint8_t i = 0; i < 10; i++)
@@ -48,7 +48,7 @@ void Clock::update()
 
             // Bad fix for timezone (Guess it won't handle summertime)
             m_time.hour = (m_time.hour + m_timeZone) % 24;
-            return;
+            return true;
         }
         else
         {
@@ -57,4 +57,5 @@ void Clock::update()
         }
     }
     Serial.println("\nUpdate Failed");
+    return false;
 }
