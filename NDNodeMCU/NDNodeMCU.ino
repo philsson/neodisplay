@@ -20,7 +20,7 @@ Clock clock(ntpUDP, TIMEZONE);
 
 Display display;
 
-DisplayParser displayParser(display);
+DisplayParser displayParser(display, clock);
 
 void flipLED()
 {
@@ -40,14 +40,15 @@ void timerCallback()
   // TODO: Here we will actuate depending on the mode
   
   // Repaint the screen with new clock update
-  plotClock(clock, display);
+  //plotClock(clock, display);
   display.draw();
 }
 
 void clockISR()
 {
   clock.tick();
-  Serial.printf("%d:%d:%d\n", clock.getTime().hour, clock.getTime().minute, clock.getTime().second);
+  plotClock(clock, display);
+  //Serial.printf("%d:%d:%d\n", clock.getTime().hour, clock.getTime().minute, clock.getTime().second);
 }
 
 void setup()
@@ -80,19 +81,21 @@ void setup()
 
   Serial.println(WiFi.localIP());
 
-  display.begin();
-  display.setBrightness(15);
-
-  display.test();
-  display.disco();
-  display.clear();
-
   // Checking for OTA upgrade before turning on Interrupts
   // Not tested if this is possible to time
   for (int i = 0; i < 100; i++)
   {
     ArduinoOTA.handle();
   }
+
+  digitalWrite(LED_MAIN, HIGH);
+
+  display.begin();
+  display.setBrightness(15);
+
+  display.test();
+  display.disco();
+  display.clear();
   
   ticker.attach_ms(LOOPTIME, timerCallback);
   clockTicker.attach_ms(1e3, clockISR);
@@ -111,5 +114,4 @@ void loop()
       displayParser.parse(newByte);
     }
   }
-  //clock.update();
 }

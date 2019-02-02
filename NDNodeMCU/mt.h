@@ -6,6 +6,7 @@
 #include <Arduino.h>
 #include <vector>
 #include "display.h"
+#include "clock.h"
 
 enum PacketType {
     MODE = 0,
@@ -17,6 +18,7 @@ enum Command {
     CLEAR = 0, // Empty all but the permanent part
     BRIGHTNESS,
     TEST,
+    RENEW_TIME,
 };
 
 enum DisplayUpdate {
@@ -56,7 +58,7 @@ typedef struct PacketDisplayUpdate {
 class DisplayParser
 {
 public:
-    DisplayParser(Display& display);
+    DisplayParser(Display& display, Clock& clock);
 
     bool parse(const uint8_t byteIn);
 
@@ -73,4 +75,6 @@ private:
     void actuateDisplay(DisplayUpdate update, const Display::PixelVec& pixels);
 
     Display& m_display;
+
+    Clock& m_clock;
 };

@@ -1,8 +1,9 @@
 #include "mt.h"
 #include "config.h"
 
-DisplayParser::DisplayParser(Display& display)
+DisplayParser::DisplayParser(Display& display, Clock& clock)
 : m_display(display)
+, m_clock(clock)
 {}
 
 bool DisplayParser::parse(const uint8_t byteIn)
@@ -178,6 +179,9 @@ void DisplayParser::actuateCommand(Command command, const uint8_t value)
         break;
     case TEST:
         m_display.test();
+        break;
+    case RENEW_TIME:
+        m_clock.update();
         break;
     }
 }

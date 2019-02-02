@@ -21,11 +21,13 @@ class DisplayEnums:
         CLOCK = 0
         PULSE = 1
         GO_AROUND = 2
+        FADE = 3
 
     class Command:
         CLEAR = 0
         BRIGHTNESS = 1
         TEST = 2
+        RENEW_TIME = 3
 
     class DisplayUpdate:
         PARTIAL = 0
