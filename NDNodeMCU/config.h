@@ -5,12 +5,11 @@
 #pragma once
 
 #include <Arduino.h>
+#include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager
 
 
 /* WiFi / Network settings */
 #define UDP_PORT 4210
-#define WIFI_SSID "****"
-#define WIFI_PASSWORD "****"
 
 /* Display 
  * 0,0 is in the upper left corner
@@ -39,6 +38,11 @@
 /* EEPROM */
 #define EEPROM_SIZE 512
 
+/* WIFI MANAGER */
+#define WM_PORT_NUM_SIZE 8
+#define WM_LED_NUM_SIZE 4
+
+void saveWiFiConfigCallback();
 
 class Settings 
 {
@@ -46,24 +50,44 @@ public:
 
     struct {
         uint port = 4210;
-        char wifiSSID[20] = "";
-        char wifiPASS[20] = "";
 
     } network;
 
     struct {
+        uint16_t numOfLeds = 4;
         uint8_t mode = 0;
     } display;
 
-    Settings();
+    // This struct is for temporary data
+    // used by the wifiManager
+    struct {
+        char port[WM_PORT_NUM_SIZE] = "1234";
+        char numOfLEDs[WM_LED_NUM_SIZE] = "4";
+    } wifiManager;
+
+    Settings(WiFiManager* pWiFiManager);
 
     bool load();
 
+    //! Save config to EEPROM
+    //! Return: Always true
     bool save();
+
+    //! Copy values from RAM and run
+    //! save() to store in EEPROM
+    bool saveOnDemand();
+
+    //! Resets any stored values by the WiFiManager
+    //! m_pWiFiManager
+    void resetWiFi();
 
 private:
 
+    WiFiManager* m_pWiFiManager;
+
     uint m_addrNetwork, m_addrDisplay;
+
+    WiFiManagerParameter m_wmPort;
 
 };
 

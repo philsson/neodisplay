@@ -2,10 +2,21 @@
 
 #include <EEPROM.h>
 
-Settings::Settings()
-: m_addrNetwork(0)
-, m_addrDisplay(m_addrNetwork + sizeof(Settings::network))
+static bool needSaving = false;
+
+void saveWiFiConfigCallback()
 {
+    needSaving = true;
+}
+
+Settings::Settings(WiFiManager* pWiFiManager)
+: m_pWiFiManager(pWiFiManager)
+, m_addrNetwork(0)
+, m_addrDisplay(m_addrNetwork + sizeof(Settings::network))
+, m_wmPort("Port", "Incoming UDP port", wifiManager.port, WM_PORT_NUM_SIZE)
+{
+    m_pWiFiManager->setSaveConfigCallback(saveWiFiConfigCallback);
+    m_pWiFiManager->addParameter(&m_wmPort);
 }
 
 bool Settings::load()
@@ -25,6 +36,21 @@ bool Settings::save()
     EEPROM.commit();
     EEPROM.end();
     return true;
+}
+
+bool Settings::saveOnDemand()
+{
+    if (needSaving)
+    {
+        network.port = atoi(m_wmPort.getValue());
+        return save();
+    }
+    return true;
+}
+
+void Settings::resetWiFi()
+{
+    m_pWiFiManager->resetSettings();
 }
 
 /*  Documentation for ESP8266 EEPROM

@@ -1,19 +1,26 @@
 #include <Arduino.h>
 #include <ArduinoOTA.h>
-#include <ESP8266WiFi.h>
+#include <DNSServer.h>
 #include <ESP8266mDNS.h>
-#include <WiFiUdp.h>
+#include <ESP8266WiFi.h>          // https://github.com/esp8266/Arduino
+#include <ESP8266WebServer.h>
 #include <Ticker.h>
+#include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager
+#include <WiFiUdp.h>
 
 // Includes from this project
-#include "display.h"
 #include "clock.h"
-#include "mt.h"
+#include "config.h"
+#include "display.h"
 #include "graphics.h"
+#include "mt.h"
 
-Settings config;
+// Settings registers the callback
+// to prepare for saving new parameters
+WiFiManager wifiManager;
+Settings config(&wifiManager);
 
-Ticker ticker, clockTicker;
+Ticker ticker, clockTicker, wifiTicker;
 
 WiFiUDP Udp;
 WiFiUDP ntpUDP;
@@ -30,6 +37,21 @@ void flipLED()
 
   ledStatus = !ledStatus;
   digitalWrite(LED_MAIN, ledStatus);
+}
+
+// Gets called when WiFiManager enters configuration mode
+void configWifiCallback(WiFiManager *pWifiManager)
+{
+  Serial.println("Entering wifi configuration mode");
+  Serial.print("SSID: ");
+  Serial.println(pWifiManager->getConfigPortalSSID());
+  Serial.print("IP: ");
+  //WiFi.softAP("NeoDisplay", "");
+  //pWifiManager->startConfigPortal("NeoDisplay");
+  Serial.println(WiFi.softAPIP());
+  
+
+  wifiTicker.attach(2.0, flipLED); // TODO: Replace for WiFi AP symbol blinking on display
 }
 
 void timerCallback()
@@ -59,18 +81,22 @@ void setup()
   digitalWrite(LED_MAIN, HIGH);
   Serial.begin(115200);
   Serial.println("Booting");
-  WiFi.hostname("NeoDisplay");
+  
+  /* WiFi Setup */
   WiFi.mode(WIFI_STA);
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-  while (WiFi.status() != WL_CONNECTED)
+  //config.resetWiFi(); // Uncomment to reset wifiManager Settings
+  // If "setup" is called then settings will need to be saved
+  wifiManager.setAPCallback(configWifiCallback);
+  if (!wifiManager.autoConnect("NeoDisplay")) 
   {
-    delay(500);
-    flipLED();
-    Serial.print(".");
+    Serial.println("failed to connect and hit timeout");
+    //reset and try again, or maybe put it to deep sleep
+    ESP.reset();
+    delay(1000);
   }
-  digitalWrite(LED_MAIN, LOW);
-  Serial.println(" connected");
+  Serial.println("Connected! :)");
+  wifiTicker.detach();
+  config.saveOnDemand(); // Will save if there is need
 
   /* Read EEPROM */
   config.load();
