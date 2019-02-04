@@ -129,7 +129,6 @@ void Display::clear(Display::Layer layer)
         clearVec(m_layersGoalState[layer]);
     }
     Adafruit_NeoPixel::clear();
-    draw();
 }
 
 void Display::test()

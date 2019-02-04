@@ -147,6 +147,9 @@ public:
 
     void begin();
 
+    //! Sets the Display mode and
+    //! stores the new mode in EEPROM
+    //! @mode: The new mode
     void setMode(Mode mode);
 
     Mode getMode();
@@ -159,6 +162,9 @@ public:
     //! @b: Brightness in range [0, 255]
     void setBrightness(const uint8_t b);
 
+    //! Clear set layer. "draw()" needs
+    //! to be ran afterwards to execute
+    //! @layer: Layer to clear
     void clear(Layer layer = MIDLAYER);
 
     void test();
@@ -225,6 +231,11 @@ private:
     //! stable enough
     void clearVec(PixelVec& pixelVec);
 
+    //! Because of approximations two pixel values may not be perfectly equal.
+    //! This function evaluates if they are "close enough"
+    //! @a: lhs pixel
+    //! @b: rhs pixel
+    //! Return: true if they are "equal"
     const bool almostEqualPixels(const Pixel& a, const Pixel& b) const;
 
 };
