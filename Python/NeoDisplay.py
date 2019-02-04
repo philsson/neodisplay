@@ -124,10 +124,10 @@ class DisplayDataSender:
 
         self.send_packet(header, payload)
 
-    def set_brightness(self, value):
+    def send_command(self, command,  value = 0):
 
         payload = mt.Command(
-            Command=mt.DisplayEnums.Command.BRIGHTNESS,
+            Command=command,
             Value=value
         )
 
@@ -232,7 +232,7 @@ def main():
 
     print("Pixel Display python side")
 
-    sender = DisplayDataSender("192.168.1.111", 4210)
+    sender = DisplayDataSender("192.168.1.110", 4210)
 
     server = OSCServer(("0.0.0.0", 8888))
     #server.addMsgHandler("/1/xy1", push_xy_callback)
@@ -240,7 +240,10 @@ def main():
 
     server.handle_error = types.MethodType(handle_error, server)
 
-    sender.set_mode(mt.DisplayEnums.Mode.FADE)
+    sender.send_command(mt.DisplayEnums.Command.CONFIGURE_WIFI)
+    #sender.send_command(mt.DisplayEnums.Command.RESET_WIFI)
+    #sender.set_mode(mt.DisplayEnums.Mode.FADE)
+
 
     while True:
         server.handle_request()

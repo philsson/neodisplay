@@ -183,6 +183,12 @@ void DisplayParser::actuateCommand(Command command, const uint8_t value)
     case RENEW_TIME:
         m_clock.update();
         break;
+    case RESET_WIFI:
+        config.resetWiFi();
+        break;
+    case CONFIGURE_WIFI:
+        config.reconfigure();
+        break;
     }
 }
 

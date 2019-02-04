@@ -9,7 +9,7 @@
 
 
 /* WiFi / Network settings */
-#define UDP_PORT 4210
+// Default incoming UDP port 4210
 
 /* Display 
  * 0,0 is in the upper left corner
@@ -61,12 +61,14 @@ public:
     // This struct is for temporary data
     // used by the wifiManager
     struct {
-        char port[WM_PORT_NUM_SIZE] = "1234";
+        char port[WM_PORT_NUM_SIZE] = "4210";
         char numOfLEDs[WM_LED_NUM_SIZE] = "4";
     } wifiManager;
 
     Settings(WiFiManager* pWiFiManager);
 
+    //! Load config from EEPROM
+    //! Return: Always true
     bool load();
 
     //! Save config to EEPROM
@@ -77,9 +79,15 @@ public:
     //! save() to store in EEPROM
     bool saveOnDemand();
 
+    //! Call to start AP mode and reconfigure
+    //! If nothing is done settings will be preserved
+    void reconfigure();
+
     //! Resets any stored values by the WiFiManager
     //! m_pWiFiManager
     void resetWiFi();
+
+    void print();
 
 private:
 

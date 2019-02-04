@@ -48,9 +48,24 @@ bool Settings::saveOnDemand()
     return true;
 }
 
+void Settings::reconfigure()
+{
+    if (!m_pWiFiManager->startConfigPortal("NeoDisplay"))
+    {
+        delay(1000);
+        ESP.reset();
+    }
+}
+
 void Settings::resetWiFi()
 {
     m_pWiFiManager->resetSettings();
+    ESP.reset();
+}
+
+void Settings::print()
+{
+    Serial.printf("UDP Port: %d\n", network.port);
 }
 
 /*  Documentation for ESP8266 EEPROM

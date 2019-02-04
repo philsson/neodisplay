@@ -101,8 +101,9 @@ void setup()
   /* Read EEPROM */
   config.load();
   display.setMode((Display::Mode)config.display.mode);
+  config.print();
 
-  Udp.begin(UDP_PORT);
+  Udp.begin(config.network.port);
 
   clock.begin();
   clock.update();

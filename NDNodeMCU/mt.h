@@ -19,6 +19,8 @@ enum Command {
     BRIGHTNESS,
     TEST,
     RENEW_TIME,
+    RESET_WIFI,
+    CONFIGURE_WIFI,
 };
 
 enum DisplayUpdate {

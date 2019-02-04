@@ -28,6 +28,8 @@ class DisplayEnums:
         BRIGHTNESS = 1
         TEST = 2
         RENEW_TIME = 3
+        RESET_WIFI = 4
+        CONFIGURE_WIFI = 5
 
     class DisplayUpdate:
         PARTIAL = 0
