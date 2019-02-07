@@ -2,6 +2,7 @@
 #include "graphics.h"
 
 using namespace fonts::std;
+using namespace fonts::drawings;
 
 void plotNum(Display& display, uint8_t num, uint8_t xPos, uint8_t yPos, uint32_t color)
 {
@@ -55,4 +56,84 @@ void plotClock(const Clock& clock, Display& display)
         plotColumn(display, separator, 10, 0x00FF00);
         plotColumn(display, separator, 20, 0x00FF00); // 0x5600FF nice purple
     }
+}
+
+void plotArr(Display& display,
+             const byte arr[],
+             uint8_t width, 
+             uint8_t height,
+             uint8_t xPos, 
+             uint8_t yPos, 
+             uint32_t color,
+             Display::Layer layer)
+{
+    static const uint8_t xOffset = sizeof(byte) - width;
+    
+    for (uint8_t y = 0; y < height; y++)
+    {
+        byte row = arr[y];
+        for (uint8_t x = 0; x < width; x++)
+        {
+            if (row >> (width - 1 - x) & 0x01)
+            {
+                display.setPixel(xPos + x, yPos + y, color, layer);
+            }
+        }
+    }
+}
+
+bool plotWiFi(Display& display, bool doneConnecting, bool connected)
+{
+    // TODO: Write the status symbol (Green Tick and Red X)
+    static const Display::Layer layer = Display::Layer::MIDLAYER;
+    display.clear(layer);
+    //display.clear(Display::Layer::ALL);
+    static uint8_t turn = 0;
+    static int tick = 0;
+    static const int animationTime = 1000; // Time for the whole symbol to update / pulse
+
+    // Plot dot
+    plotArr(display, fonts::drawings::wifi[3].d, 2, 8, 21, 0, 0x1E90FF, layer);
+
+    if (turn == 1)
+    {
+        // Plot first bar
+        plotArr(display, fonts::drawings::wifi[2].d, 7, 8, 22, 0, 0x1E90FF, layer);
+    }
+
+    if (turn == 2)
+    {
+        // Plot first bar
+        plotArr(display, fonts::drawings::wifi[1].d, 7, 8, 22, 0, 0x1E90FF, layer);
+    }
+
+    if (turn == 3)
+    {
+        // Plot first bar
+        plotArr(display, fonts::drawings::wifi[0].d, 7, 8, 22, 0, 0x1E90FF, layer);
+    }
+
+    if (doneConnecting)
+    {
+        if (connected)
+        {
+            display.setPixel(4, 4, 0x00FF00, layer);
+        }
+        else
+        {
+            display.setPixel(4, 4, 0xFF0000, layer);
+        }
+    }
+    tick++;
+    if (tick >= animationTime/(LOOPTIME*3))
+    {
+        turn++;
+        if (turn == 4)
+        {
+            turn = 0;
+            return true;
+        }
+        tick = 0;
+    }
+    return false;
 }

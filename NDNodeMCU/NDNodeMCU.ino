@@ -15,12 +15,20 @@
 #include "graphics.h"
 #include "mt.h"
 
+enum WiFiStatus {
+  CONNECTING = 0,
+  CONNECTED,
+  AP,
+};
+
+WiFiStatus wifiStatus = CONNECTING;
+
 // Settings registers the callback
 // to prepare for saving new parameters
 WiFiManager wifiManager;
 Settings config(&wifiManager);
 
-Ticker ticker, clockTicker, wifiTicker;
+Ticker ticker, clockTicker;
 
 WiFiUDP Udp;
 WiFiUDP ntpUDP;
@@ -46,32 +54,44 @@ void configWifiCallback(WiFiManager *pWifiManager)
   Serial.print("SSID: ");
   Serial.println(pWifiManager->getConfigPortalSSID());
   Serial.print("IP: ");
-  //WiFi.softAP("NeoDisplay", "");
   //pWifiManager->startConfigPortal("NeoDisplay");
   Serial.println(WiFi.softAPIP());
   
-
-  wifiTicker.attach(2.0, flipLED); // TODO: Replace for WiFi AP symbol blinking on display
+  wifiStatus = AP;
 }
 
 void timerCallback()
 {
+  static uint8_t state = 0;
   // Toggle the LED on the NodeMCU
   flipLED();
 
-  
-  // TEMP:
-  // TODO: Here we will actuate depending on the mode
-  
-  // Repaint the screen with new clock update
-  //plotClock(clock, display);
+  switch (display.getMode())
+  {
+  case Display::Mode::CONNECTING: // Animate WiFi
+    if (wifiStatus == CONNECTING)
+    {
+      plotWiFi(display);
+    }
+    else
+    {  
+      plotWiFi(display, true, wifiStatus == CONNECTED);
+    }
+    break;  
+  case Display::Mode::CLOCK:
+    // Repaint the screen with new clock update
+    plotClock(clock, display);
+    break;
+  case Display::Mode::NORMAL:
+  default:
+    break;
+  }
   display.draw();
 }
 
 void clockISR()
 {
   clock.tick();
-  plotClock(clock, display);
   //Serial.printf("%d:%d:%d\n", clock.getTime().hour, clock.getTime().minute, clock.getTime().second);
 }
 
@@ -81,6 +101,13 @@ void setup()
   digitalWrite(LED_MAIN, HIGH);
   Serial.begin(115200);
   Serial.println("Booting");
+  
+  display.begin();
+  display.setBrightness(15);
+  display.setEffect(Display::Effect::FADE);
+
+  clock.begin();
+  ticker.attach_ms(LOOPTIME, timerCallback);
   
   /* WiFi Setup */
   WiFi.mode(WIFI_STA);
@@ -92,21 +119,18 @@ void setup()
     Serial.println("failed to connect and hit timeout");
     //reset and try again, or maybe put it to deep sleep
     ESP.reset();
-    delay(1000);
+    delay(1e3);
   }
   Serial.println("Connected! :)");
-  wifiTicker.detach();
+  wifiStatus = CONNECTED;
   config.saveOnDemand(); // Will save if there is need
 
   /* Read EEPROM */
   config.load();
-  display.setMode((Display::Mode)config.display.mode);
+  display.setEffect((Display::Effect)config.display.effect);
   config.print();
 
   Udp.begin(config.network.port);
-
-  clock.begin();
-  clock.update();
 
   String hostname = "NeoDisplayOTA";
   ArduinoOTA.setHostname((const char *)hostname.c_str());
@@ -121,16 +145,18 @@ void setup()
     ArduinoOTA.handle();
   }
 
-  digitalWrite(LED_MAIN, HIGH);
-
-  display.begin();
-  display.setBrightness(15);
+  delay(1e3); // Let wifi animation stay for a while
+  display.setMode(Display::Mode::NORMAL);
+  delay(1e2); // Wait for last animation plot before we clear
+  display.clear(Display::Layer::ALL);
 
   display.test();
   display.disco();
   display.clear();
+
+  display.setMode(Display::Mode::CLOCK);
   
-  ticker.attach_ms(LOOPTIME, timerCallback);
+  clock.update();
   clockTicker.attach_ms(1e3, clockISR);
 }
 

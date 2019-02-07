@@ -3,7 +3,7 @@
 namespace fonts {
 namespace std {
 
-const Digits digits[10] =
+const Font digits[10] =
 {
     '0', { B0000,
            B0110,
@@ -97,5 +97,48 @@ const Digits digits[10] =
          },         
 };
 
-}
-}
+} // namespace std
+namespace drawings {
+
+const Font wifi[4] =
+{
+    '0', { B1111110,
+           B0000011,
+           B0000001,
+           B0000001,
+           B0000001,
+           B0000001,
+           B0000001,
+           B0000000,
+         },
+    '0', { B0000000,
+           B0000000,
+           B1111000,
+           B0001100,
+           B0000100,
+           B0000100,
+           B0000100,
+           B0000000,
+         },
+    '0', { B0000000,
+           B0000000,
+           B0000000,
+           B0000000,
+           B1100000,
+           B0110000,
+           B0010000,
+           B0000000,
+         },
+    '0', { B00,
+           B00,
+           B00,
+           B00,
+           B00,
+           B00,
+           B11,
+           B11,
+         },
+};
+
+} // namespace drawings
+} // namespace fonts

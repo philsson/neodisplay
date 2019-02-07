@@ -10,11 +10,18 @@
 namespace fonts {
 
 //! Definition of a font for numbers
-typedef struct { char c; byte d[FONT_HEIGHT]; } Digits;
+typedef struct { char c; byte d[FONT_HEIGHT]; } Font;
 
 namespace std {
 
-extern const Digits digits[10];
+extern const Font digits[10];
 
-}
-}
+} // namespace std
+
+namespace drawings {
+
+extern const Font wifi[4];
+
+} // namespace drawings
+
+} // namespace fonts
