@@ -10,6 +10,9 @@
 
 #include <Adafruit_NeoPixel.h>
 
+// Other thirs party libraries
+#include "mutex.h"                // https://github.com/raburton/esp8266
+
 #include "config.h"
 
 //! Display
@@ -218,6 +221,8 @@ private:
     Mode m_mode;
 
     uint8_t m_width, m_height;
+
+    mutex_t m_mutexDraw;
 
     //! @x: 0 indexed x coordinate
     //! @y: 0 indexed y coordinate

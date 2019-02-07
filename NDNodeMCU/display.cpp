@@ -10,11 +10,14 @@ Display::Display()
 , m_brightness(100)
 , m_layers(3, Display::PixelVec(NUM_PIXELS, Pixel()))
 , m_layersGoalState(3, Display::PixelVec(NUM_PIXELS, Pixel()))
-, m_mode(CLOCK)
+, m_mode(CONNECTING)
+, m_effect(FADE)
 , m_width(WIDTH)
 , m_height(HEIGHT)
+, m_mutexDraw()
 {
     setBrightness(m_brightness);
+    CreateMutex(&m_mutexDraw);
 }
 
 void Display::begin()
@@ -54,6 +57,10 @@ Display::Mode Display::getMode()
 bool Display::draw()
 {
     static const float d = 0.08f;
+    if (!GetMutex(&m_mutexDraw))
+    {
+        return false;
+    }
     bool fullyActuated = true;
     for (int i = 0; i < m_layers.size() /* and m_layersGoalState.size() */; i++)
     {
@@ -106,6 +113,7 @@ bool Display::draw()
         }
     }
     Adafruit_NeoPixel::show();
+    ReleaseMutex(&m_mutexDraw);
     return fullyActuated;
 }
 
