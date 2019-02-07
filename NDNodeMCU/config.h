@@ -55,7 +55,7 @@ public:
 
     struct {
         uint16_t numOfLeds = 4;
-        uint8_t mode = 0;
+        uint8_t effect = 0;
     } display;
 
     // This struct is for temporary data

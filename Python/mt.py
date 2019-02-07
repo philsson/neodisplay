@@ -18,10 +18,15 @@ class DisplayEnums:
         DISPLAY_INPUT = 2
 
     class Mode:
-        CLOCK = 0
-        PULSE = 1
-        GO_AROUND = 2
-        FADE = 3
+        DEFAULT = 0
+        CONNECTING = 1
+        CLOCK = 2
+        PULSE = 3
+        GO_AROUND = 4
+
+    class Effect:
+        NONE = 0
+        FADE = 1
 
     class Command:
         CLEAR = 0
@@ -41,7 +46,7 @@ class DisplayEnums:
         FOREGROUND = 2
 
 
-# Header
+# Header - Followed by one of the payloads below
 class Header(scapy.Packet):
     name = "Header"
     fields_desc = [
@@ -55,6 +60,13 @@ class Mode(scapy.Packet):
     name = "Mode"
     fields_desc = [
         scapy.ByteField("Mode", 0x00)
+    ]
+
+
+class Mode(scapy.Packet):
+    name = "Effect"
+    fields_desc = [
+        scapy.ByteField("Effect", 0x00)
     ]
 
 

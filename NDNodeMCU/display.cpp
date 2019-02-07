@@ -45,8 +45,6 @@ void Display::begin()
 void Display::setMode(Mode mode)
 {
     m_mode = mode;
-    config.display.mode = mode;
-    config.save();
 }
 
 Display::Mode Display::getMode()
@@ -54,13 +52,25 @@ Display::Mode Display::getMode()
     return m_mode;
 }
 
+void Display::setEffect(Effect effect)
+{
+    m_effect = effect;
+    config.display.effect = effect;
+    config.save();
+}
+
+Display::Effect Display::getEffect()
+{
+    return m_effect;
+}
+
 bool Display::draw()
 {
-    static const float d = 0.08f;
     if (!GetMutex(&m_mutexDraw))
     {
         return false;
     }
+    static const float d = 0.06f; // Update rate [0,1]
     bool fullyActuated = true;
     for (int i = 0; i < m_layers.size() /* and m_layersGoalState.size() */; i++)
     {
@@ -73,7 +83,7 @@ bool Display::draw()
             {
                 fullyActuated = false;
 
-                if (m_mode == FADE)
+                if (m_effect == FADE)
                 {
                     if (almostEqualPixels(currentState, goalState))
                     {
@@ -125,7 +135,7 @@ void Display::setBrightness(const uint8_t b)
 
 void Display::clear(Display::Layer layer)
 {
-    if (layer == ALL)
+    if (layer == Layer::ALL)
     {
         for (LayersIter layerIt = m_layersGoalState.begin(); layerIt != m_layersGoalState.end(); layerIt++)
         {
@@ -214,7 +224,7 @@ void Display::disco()
 void Display::setPixel(Display::Pixel pixel, 
                        Display::Layer layer)
 {
-    if (pixel.index <= NUM_PIXELS && layer != ALL)
+    if (pixel.index <= NUM_PIXELS && layer != Layer::ALL)
     {
         m_layersGoalState[layer][pixel.index] = pixel;
     }

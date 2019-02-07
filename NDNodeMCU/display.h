@@ -25,9 +25,15 @@ public:
     Display();
 
     enum Mode {
-        CLOCK = 0,
+        NORMAL = 0,
+        CONNECTING,
+        CLOCK,
         PULSE,
         GO_AROUND,
+    };
+
+    enum Effect {
+        NONE = 0,
         FADE,
     };
 
@@ -157,6 +163,10 @@ public:
 
     Mode getMode();
 
+    void setEffect(Effect effect);
+
+    Effect getEffect();
+
     //! After writing to the display this will actuate / draw
     //! Return: display fully updated. e.g. with "FADE" active
     //!         it will take a few iterations
@@ -168,43 +178,43 @@ public:
     //! Clear set layer. "draw()" needs
     //! to be ran afterwards to execute
     //! @layer: Layer to clear
-    void clear(Layer layer = MIDLAYER);
+    void clear(Layer layer = Layer::MIDLAYER);
 
     void test();
 
     void disco();
 
     void setPixel(Pixel pixel, 
-                  Layer layer = MIDLAYER);
+                  Layer layer = Layer::MIDLAYER);
 
     //! Set the color of a pixel in set layer
     void setPixel(uint8_t x, 
                   uint8_t y, 
                   uint32_t color, 
-                  Layer layer = MIDLAYER);
+                  Layer layer = Layer::MIDLAYER);
 
     void setPixel(uint8_t x, 
                   uint8_t y, 
                   uint8_t r, 
                   uint8_t g, 
                   uint8_t b, 
-                  Layer layer = MIDLAYER);
+                  Layer layer = Layer::MIDLAYER);
 
     void setPixels(std::vector<Pixel> pixels,
-                  Layer layer = MIDLAYER,
-                  Update update = FULL);
+                  Layer layer = Layer::MIDLAYER,
+                  Update update = Update::FULL);
 
     void setRow(uint8_t x, 
                 uint32_t color, 
-                Layer layer = MIDLAYER,
-                Update update = PARTIAL);
+                Layer layer = Layer::MIDLAYER,
+                Update update = Update::PARTIAL);
 
     void setRow(uint8_t x, 
                 uint8_t r, 
                 uint8_t g, 
                 uint8_t b, 
-                Layer layer = MIDLAYER,
-                Update update = PARTIAL);
+                Layer layer = Layer::MIDLAYER,
+                Update update = Update::PARTIAL);
 
 private:
    
@@ -219,6 +229,7 @@ private:
     PixelVecVec m_layersGoalState;
 
     Mode m_mode;
+    Effect m_effect;
 
     uint8_t m_width, m_height;
 

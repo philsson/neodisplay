@@ -4,7 +4,7 @@
 #include <ESP8266mDNS.h>
 #include <ESP8266WiFi.h>          // https://github.com/esp8266/Arduino
 #include <ESP8266WebServer.h>
-#include <Ticker.h>
+#include <Ticker.h>               // https://github.com/esp8266/Arduino/tree/master/libraries/Ticker
 #include <WiFiManager.h>          // https://github.com/tzapu/WiFiManager
 #include <WiFiUdp.h>
 

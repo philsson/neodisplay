@@ -240,9 +240,9 @@ def main():
 
     server.handle_error = types.MethodType(handle_error, server)
 
-    sender.send_command(mt.DisplayEnums.Command.CONFIGURE_WIFI)
+    #sender.send_command(mt.DisplayEnums.Command.CONFIGURE_WIFI)
     #sender.send_command(mt.DisplayEnums.Command.RESET_WIFI)
-    #sender.set_mode(mt.DisplayEnums.Mode.FADE)
+    sender.set_mode(mt.DisplayEnums.Mode.FADE)
 
 
     while True:
