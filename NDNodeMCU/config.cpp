@@ -16,9 +16,13 @@ Settings::Settings()
 , m_addrNetwork(0)
 , m_addrDisplay(m_addrNetwork + sizeof(Settings::network))
 , m_wmPort("Port", "Incoming UDP port", wifiManager.port, WM_PORT_NUM_SIZE)
+, m_wmNumOfLEDs("NumOfLeds", "NumOfLeds", wifiManager.numOfLEDs, 4)
+, m_wmDefaultEffect("DefaultEffect", "DefaultEffect", wifiManager.defaultEffect, 4)
 {
     m_wifiManager.setSaveConfigCallback(saveWiFiConfigCallback);
     m_wifiManager.addParameter(&m_wmPort);
+    m_wifiManager.addParameter(&m_wmNumOfLEDs);
+    m_wifiManager.addParameter(&m_wmDefaultEffect);
 }
 
 Settings* Settings::Instance()
@@ -48,6 +52,7 @@ bool Settings::save()
 {
     EEPROM.begin(EEPROM_SIZE);
     EEPROM.put(m_addrNetwork, network);
+    Serial.printf("Saving conf with Mode %d\n", display.effect);
     EEPROM.put(m_addrDisplay, display);
     EEPROM.commit();
     EEPROM.end();
@@ -81,7 +86,10 @@ void Settings::resetWiFi()
 
 void Settings::print()
 {
-    Serial.printf("UDP Port: %d\n", network.port);
+    Serial.printf("\n#-------- Config --------#\n");
+    Serial.printf("# UDP Port: %d\n", network.port);
+    Serial.printf("# Number of LEDs: %d\n", display.numOfLeds);
+    Serial.printf("# Display effect: %d\n", display.effect);
 }
 
 /*  Documentation for ESP8266 EEPROM

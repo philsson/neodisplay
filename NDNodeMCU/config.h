@@ -60,13 +60,6 @@ public:
         uint8_t effect = 0;
     } display;
 
-    // This struct is for temporary data
-    // used by the wifiManager
-    struct {
-        char port[WM_PORT_NUM_SIZE] = "4210";
-        char numOfLEDs[WM_LED_NUM_SIZE] = "4";
-    } wifiManager;
-
     //! This class will only instanciate one instance
     //! created on the first call to this function
     //! Return: The only instance
@@ -94,9 +87,18 @@ public:
     //! m_pWiFiManager
     void resetWiFi();
 
+    //! Print the current config to the console
     void print();
 
 private:
+
+    // This struct is for temporary data
+    // used by the wifiManager
+    struct {
+        char port[WM_PORT_NUM_SIZE] = "4210";
+        char numOfLEDs[WM_LED_NUM_SIZE] = "4";
+        char defaultEffect[2] = "1";
+    } wifiManager;
 
     static Settings* s_instance;
 
@@ -107,5 +109,7 @@ private:
     uint m_addrNetwork, m_addrDisplay;
 
     WiFiManagerParameter m_wmPort;
+    WiFiManagerParameter m_wmNumOfLEDs;
+    WiFiManagerParameter m_wmDefaultEffect;
 
 };
