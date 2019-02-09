@@ -52,11 +52,14 @@ Display::Mode Display::getMode()
     return m_mode;
 }
 
-void Display::setEffect(Effect effect)
+void Display::setEffect(Effect effect, bool permanent)
 {
     m_effect = effect;
-    Settings::Instance()->display.effect = effect;
-    Settings::Instance()->save();
+    if (permanent)
+    {
+        Settings::Instance()->display.effect = effect;
+        Settings::Instance()->save();
+    }
 }
 
 Display::Effect Display::getEffect()

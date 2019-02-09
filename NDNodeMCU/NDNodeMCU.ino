@@ -62,7 +62,6 @@ void configWifiCallback(WiFiManager *pWifiManager)
 
 void timerCallback()
 {
-  static uint8_t state = 0;
   // Toggle the LED on the NodeMCU
   flipLED();
 
@@ -125,11 +124,6 @@ void setup()
   wifiStatus = CONNECTED;
   pConfig->saveOnDemand(); // Will save if there is need
 
-  /* Read EEPROM */
-  pConfig->load();
-  display.setEffect((Display::Effect)pConfig->display.effect);
-  pConfig->print();
-
   Udp.begin(pConfig->network.port);
 
   String hostname = "NeoDisplayOTA";
@@ -153,6 +147,12 @@ void setup()
   display.test();
   display.disco();
   display.clear();
+
+  /* Read EEPROM */
+  pConfig->load();
+  Serial.printf("Effect: %d\n", (Display::Effect)pConfig->display.effect);
+  display.setEffect((Display::Effect)pConfig->display.effect);
+  pConfig->print();
 
   display.setMode(Display::Mode::CLOCK);
   

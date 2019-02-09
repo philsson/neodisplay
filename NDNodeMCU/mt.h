@@ -10,6 +10,7 @@
 
 enum PacketType {
     MODE = 0,
+    EFFECT,
     COMMAND,
     DISPLAY_INPUT, // pixel updates
 };
@@ -46,6 +47,10 @@ typedef struct PacketMode {
     uint8_t mode;
 } __attribute__ ((__packed__));
 
+typedef struct PacketEffect {
+    uint8_t effect;
+} __attribute__ ((__packed__));
+
 typedef struct PacketCommand {
     uint8_t command;
     uint8_t value;
@@ -53,6 +58,7 @@ typedef struct PacketCommand {
 
 typedef struct PacketDisplayUpdate {
     uint8_t typeOfUpdate;
+    uint8_t layer;
     uint16_t numOfPixels;
     std::vector<Display::Pixel> pixels;
 } __attribute__ ((__packed__));
@@ -68,13 +74,15 @@ private:
 
     bool parseMode(const int index, const int packetSize, const uint8_t byteIn);
 
+    bool parseEffect(const int index, const int packetSize, const uint8_t byteIn);
+
     bool parseCommand(const int index, const int packetSize, const uint8_t byteIn);
 
     bool parseDisplay(const int index, const int packetSize, const uint8_t byteIn);
 
     void actuateCommand(Command command, const uint8_t value);
 
-    void actuateDisplay(DisplayUpdate update, const Display::PixelVec& pixels);
+    void actuateDisplay(DisplayUpdate update, const Display::PixelVec& pixels, Display::Layer layer);
 
     Display& m_display;
 

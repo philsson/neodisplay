@@ -163,7 +163,7 @@ public:
 
     Mode getMode();
 
-    void setEffect(Effect effect);
+    void setEffect(Effect effect, bool permanent = false);
 
     Effect getEffect();
 

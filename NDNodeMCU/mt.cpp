@@ -60,6 +60,11 @@ bool DisplayParser::parse(const uint8_t byteIn)
             done = parseMode(payloadParseIndex++, pHeader->packetSize, byteIn);
             break;
 
+        case EFFECT:
+            //Serial.printf("Unpacking MODE\n");
+            done = parseEffect(payloadParseIndex++, pHeader->packetSize, byteIn);
+            break;
+
         case COMMAND:
             //Serial.printf("Unpacking COMMAND\n");
             done = parseCommand(payloadParseIndex++, pHeader->packetSize, byteIn);
@@ -90,11 +95,30 @@ bool DisplayParser::parseMode(const int index, const int packetSize, const uint8
 
     modePkt.mode = byteIn;
 
-    //Serial.printf("Mode received. Mode: %d\n", modePkt.mode);
+    Serial.printf("Mode received. Mode: %d\n", modePkt.mode);
 
     m_display.setMode((Display::Mode)modePkt.mode);
 
     return true;
+}
+
+bool DisplayParser::parseEffect(const int index, const int packetSize, const uint8_t byteIn)
+{
+    static PacketEffect effectPkt;
+
+    switch (index)
+    {
+    case 0:
+        effectPkt.effect = byteIn;
+        break;
+    case 1:
+        Serial.printf("Effect received. Effect: %d\n", effectPkt.effect);
+        m_display.setEffect((Display::Effect)effectPkt.effect, byteIn /* permanent */);
+        return true;
+        break;
+    }
+    
+    return false;
 }
 
 bool DisplayParser::parseCommand(const int index, const int packetSize, const uint8_t byteIn)
@@ -108,7 +132,7 @@ bool DisplayParser::parseCommand(const int index, const int packetSize, const ui
         break;
     case 1:
         commandPkt.value = byteIn;
-        //Serial.printf("Command received: %d, %d\n", commandPkt.command, commandPkt.value);
+        Serial.printf("Command received: %d, %d\n", commandPkt.command, commandPkt.value);
 
         actuateCommand((Command)commandPkt.command, commandPkt.value);
         return true;
@@ -136,7 +160,11 @@ bool DisplayParser::parseDisplay(const int index, const int packetSize, const ui
         //Serial.printf("Rinsing pixel content. Num of pixels: %d\n", displayPkt.pixels.size());
         break;
     case 1:
+        //Serial.printf("Layer: %d\n", byteIn);
+        displayPkt.layer = byteIn;
+        break;
     case 2:
+    case 3:
         // Parsing second and third byte; NumberOfPixelUpdates
 
         //Serial.printf("Prev numOfPixels: %d, index: %d\n", displayPkt.numOfPixels, index);
@@ -146,19 +174,21 @@ bool DisplayParser::parseDisplay(const int index, const int packetSize, const ui
     default:
         // Parsing pixels (We end up here many times. Until we have all pixels from numOfPixels)
         //Serial.printf("Processing pixel...\n");
-        uint8_t innerIndex = (index - 3) % 4;
+        uint8_t innerIndex = (index - 4) % 4;
         pixelArr[innerIndex] = byteIn;
+
+        //Serial.printf("innerIndex: %d, byteIn: %d\n", innerIndex, byteIn);
 
         if (innerIndex == 3)
         {
             displayPkt.pixels.push_back(*pPixel);
-            //Serial.printf("Pushing new pixel\n");
+            //Serial.printf("Pushing new pixel with i: %d, r: %d, g: %d, b: %d\n", pPixel->index, pPixel->r, pPixel->g, pPixel->b);
         }
         if (displayPkt.pixels.size() == displayPkt.numOfPixels)
         {
             //Serial.printf("Display received. Size %d\n", displayPkt.pixels.size());
             //Serial.printf("First pixel with index %d: %d, %d, %d\n", displayPkt.pixels[0].index, displayPkt.pixels[0].r, displayPkt.pixels[0].g, displayPkt.pixels[0].b);
-            actuateDisplay((DisplayUpdate)displayPkt.typeOfUpdate, displayPkt.pixels);
+            actuateDisplay((DisplayUpdate)displayPkt.typeOfUpdate, displayPkt.pixels, (Display::Layer)displayPkt.layer);
             return true;
         }
         break;
@@ -192,8 +222,8 @@ void DisplayParser::actuateCommand(Command command, const uint8_t value)
     }
 }
 
-void DisplayParser::actuateDisplay(DisplayUpdate update, const Display::PixelVec& pixels)
+void DisplayParser::actuateDisplay(DisplayUpdate update, const Display::PixelVec& pixels, Display::Layer layer)
 {
     // TODO: Scary cast to "update". Same is declared in both Display.h and mt.h
-    m_display.setPixels(pixels, Display::FOREGROUND, (Display::Update)update);
+    m_display.setPixels(pixels, layer, (Display::Update)update);
 }

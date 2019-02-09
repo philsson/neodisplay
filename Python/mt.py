@@ -14,8 +14,9 @@ class DisplayEnums:
 
     class PacketType:
         MODE = 0
-        COMMAND = 1
-        DISPLAY_INPUT = 2
+        EFFECT = 1
+        COMMAND = 2
+        DISPLAY_INPUT = 3
 
     class Mode:
         DEFAULT = 0
@@ -63,10 +64,11 @@ class Mode(scapy.Packet):
     ]
 
 
-class Mode(scapy.Packet):
+class Effect(scapy.Packet):
     name = "Effect"
     fields_desc = [
-        scapy.ByteField("Effect", 0x00)
+        scapy.ByteField("Effect", 0x00),
+        scapy.ByteField("Permanent", 0x00)
     ]
 
 
@@ -92,6 +94,7 @@ class Pixels(scapy.Packet):
     name = "Pixels"
     fields_desc = [
         scapy.ByteField("TypeOfUpdate", 0x00),
+        scapy.ByteField("Layer", 0x01),
         scapy.FieldLenField("NumberOfPixelUpdates", None, count_of="PixelData", fmt='H'),
         scapy.PacketListField("PixelData", None, Pixel, count_from=lambda pkt: pkt.NumberOfPixelUpdates)
     ]
