@@ -25,8 +25,8 @@ WiFiStatus wifiStatus = CONNECTING;
 
 // Settings registers the callback
 // to prepare for saving new parameters
-WiFiManager wifiManager;
-Settings config(&wifiManager);
+Settings* pConfig = Settings::Instance();
+WiFiManager* pWiFiManager = pConfig->getWiFiManager();
 
 Ticker ticker, clockTicker;
 
@@ -113,8 +113,8 @@ void setup()
   WiFi.mode(WIFI_STA);
   //config.resetWiFi(); // Uncomment to reset wifiManager Settings
   // If "setup" is called then settings will need to be saved
-  wifiManager.setAPCallback(configWifiCallback);
-  if (!wifiManager.autoConnect("NeoDisplay")) 
+  pWiFiManager->setAPCallback(configWifiCallback);
+  if (!pWiFiManager->autoConnect("NeoDisplay")) 
   {
     Serial.println("failed to connect and hit timeout");
     //reset and try again, or maybe put it to deep sleep
@@ -123,14 +123,14 @@ void setup()
   }
   Serial.println("Connected! :)");
   wifiStatus = CONNECTED;
-  config.saveOnDemand(); // Will save if there is need
+  pConfig->saveOnDemand(); // Will save if there is need
 
   /* Read EEPROM */
-  config.load();
-  display.setEffect((Display::Effect)config.display.effect);
-  config.print();
+  pConfig->load();
+  display.setEffect((Display::Effect)pConfig->display.effect);
+  pConfig->print();
 
-  Udp.begin(config.network.port);
+  Udp.begin(pConfig->network.port);
 
   String hostname = "NeoDisplayOTA";
   ArduinoOTA.setHostname((const char *)hostname.c_str());

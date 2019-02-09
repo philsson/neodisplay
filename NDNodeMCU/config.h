@@ -44,6 +44,8 @@
 
 void saveWiFiConfigCallback();
 
+//! Stores and configures all settings
+//! Using Singleton pattern
 class Settings 
 {
 public:
@@ -65,7 +67,12 @@ public:
         char numOfLEDs[WM_LED_NUM_SIZE] = "4";
     } wifiManager;
 
-    Settings(WiFiManager* pWiFiManager);
+    //! This class will only instanciate one instance
+    //! created on the first call to this function
+    //! Return: The only instance
+    static Settings* Instance();
+
+    WiFiManager* getWiFiManager();
 
     //! Load config from EEPROM
     //! Return: Always true
@@ -91,12 +98,14 @@ public:
 
 private:
 
-    WiFiManager* m_pWiFiManager;
+    static Settings* s_instance;
+
+    Settings();
+
+    WiFiManager m_wifiManager;
 
     uint m_addrNetwork, m_addrDisplay;
 
     WiFiManagerParameter m_wmPort;
 
 };
-
-extern Settings config;

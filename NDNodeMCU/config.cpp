@@ -9,14 +9,30 @@ void saveWiFiConfigCallback()
     needSaving = true;
 }
 
-Settings::Settings(WiFiManager* pWiFiManager)
-: m_pWiFiManager(pWiFiManager)
+Settings *Settings::s_instance = 0;
+
+Settings::Settings()
+: m_wifiManager()
 , m_addrNetwork(0)
 , m_addrDisplay(m_addrNetwork + sizeof(Settings::network))
 , m_wmPort("Port", "Incoming UDP port", wifiManager.port, WM_PORT_NUM_SIZE)
 {
-    m_pWiFiManager->setSaveConfigCallback(saveWiFiConfigCallback);
-    m_pWiFiManager->addParameter(&m_wmPort);
+    m_wifiManager.setSaveConfigCallback(saveWiFiConfigCallback);
+    m_wifiManager.addParameter(&m_wmPort);
+}
+
+Settings* Settings::Instance()
+{
+    if (!s_instance)
+    {
+        s_instance = new Settings;
+    }
+    return s_instance;
+}
+
+WiFiManager* Settings::getWiFiManager()
+{
+    return &m_wifiManager;
 }
 
 bool Settings::load()
@@ -50,7 +66,7 @@ bool Settings::saveOnDemand()
 
 void Settings::reconfigure()
 {
-    if (!m_pWiFiManager->startConfigPortal("NeoDisplay"))
+    if (!m_wifiManager.startConfigPortal("NeoDisplay"))
     {
         delay(1000);
         ESP.reset();
@@ -59,7 +75,7 @@ void Settings::reconfigure()
 
 void Settings::resetWiFi()
 {
-    m_pWiFiManager->resetSettings();
+    m_wifiManager.resetSettings();
     ESP.reset();
 }
 

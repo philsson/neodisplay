@@ -55,8 +55,8 @@ Display::Mode Display::getMode()
 void Display::setEffect(Effect effect)
 {
     m_effect = effect;
-    config.display.effect = effect;
-    config.save();
+    Settings::Instance()->display.effect = effect;
+    Settings::Instance()->save();
 }
 
 Display::Effect Display::getEffect()
