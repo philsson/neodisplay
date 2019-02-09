@@ -53,7 +53,7 @@ public:
     //! Content of one pixel
     typedef struct Pixel {
         uint8_t index;
-        int r, g, b;
+        uint8_t r, g, b;
 
         Pixel()
         : index(0)
