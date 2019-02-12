@@ -1,68 +1,61 @@
-from time import sleep
+import argparse
 
+from DisplayDataSender import DisplayDataSender
+from Snake import Snake
+from Display import Display
 
-from OSC import OSCServer,OSCClient, OSCMessage
-from time import sleep
-import types
+from pythonosc import dispatcher
+from pythonosc import osc_server
 
-import DisplayDataSender
-
+import pythonosc as posc
 
 import mt
 
 
-
-#
-# def push_xy_callback(path, tags, args, source):
-#     if path == "/1/xy1":
-#         print("x:", args[0], " y:", args[1])
-
-def handle_error(self, request, client_address):
-    pass
-
-
-
-
+def print_topic(path, arg1=None, arg2=None, arg3=None):
+    """
+    Testfunction for OSC topics
+    """
+    print("Path:", path)
+    if arg1 is not None:
+        print("Arg1:", arg1)
+    if arg2 is not None:
+        print("Arg2:", arg2)
+    if arg3 is not None:
+        print("Arg3:", arg3)
 
 
 def main():
+    # UDP Sender to NodeMCU on NeoDisplay
+    sender = DisplayDataSender("NeoDisplay", 4210)
 
-    print("Pixel Display python side")
+    # The game
+    snake = Snake(Display.WIDTH, Display.HEIGHT, sender.update)
 
-    sender = DisplayDataSender.DisplayDataSender("192.168.1.110", 4210)
+    # OSC Server configuration
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--ip", default="0.0.0.0", help="The ip to listen on")
+    parser.add_argument("--port", type=int, default=8888, help="The port to listen on")
+    args = parser.parse_args()
+    dispatcher = posc.dispatcher.Dispatcher()
+    #dispatcher.map("/*", print_topic) # Wildcard for all topics
+    dispatcher.map("/Snake/Dir/*", snake.turn)
+    dispatcher.map("/Snake/Reset", snake.reset)
+    dispatcher.map("/Snake/Fader", snake.speed)
+    server = posc.osc_server.ThreadingOSCUDPServer((args.ip, args.port), dispatcher)
 
-    osc_server = OSCServer(("0.0.0.0", 8888))
-    #server.addMsgHandler("/1/xy1", push_xy_callback)
-    osc_server.addMsgHandler("/1/xy1", sender.slider)
-
-    osc_server.handle_error = types.MethodType(handle_error, osc_server)
-
-    #sender.send_command(mt.DisplayEnums.Command.CONFIGURE_WIFI)
-    #sender.send_command(mt.DisplayEnums.Command.RESET_WIFI)
+    sender.set_brightness(35)
+    sender.set_mode(mt.DisplayEnums.Mode.DEFAULT)
+    sender.clear(mt.DisplayEnums.Layer.ALL)
     sender.set_effect(mt.DisplayEnums.Effect.NONE)
-    #sender.set_effect(mt.DisplayEnums.Effect.FADE)
 
-    #return
+    # Start Stuff:
+    print("Serving OSC on {}".format(server.server_address))
+    server.serve_forever()
 
-
-    #while True:
-    #    osc_server.handle_request()
-
-    #sender.update()
-
-    print("moving forward with walking pixel")
-    
-    while True:
-        sender.walk_pixel()
-        sleep(0.03)
-
-    sender.clear()
-
-    #for i in range(0, 3):
-    #    sender.sendDisplayUpdate()
-    #    sleep(5)
-
+    # Ending Stuff
     server.close
+
 
 if __name__ == "__main__":
     main()

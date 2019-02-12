@@ -1,5 +1,4 @@
 import scapy.all as scapy
-from enum import Enum
 
 """
 Little Endian (LE) types are needed when received on NodeMCU side 
@@ -45,6 +44,7 @@ class DisplayEnums:
         BACKGROUND = 0
         MIDLAYER = 1
         FOREGROUND = 2
+        ALL = 3
 
 
 # Header - Followed by one of the payloads below
@@ -98,3 +98,4 @@ class Pixels(scapy.Packet):
         scapy.FieldLenField("NumberOfPixelUpdates", None, count_of="PixelData", fmt='H'),
         scapy.PacketListField("PixelData", None, Pixel, count_from=lambda pkt: pkt.NumberOfPixelUpdates)
     ]
+

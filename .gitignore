@@ -3,5 +3,6 @@
 .vscode/arduino.json
 .vscode/c_cpp_properties.json
 Python/.idea/*
+Python/venv
 Notes/*
 .vscode/settings.json

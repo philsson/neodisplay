@@ -96,6 +96,7 @@ void clockISR()
 
 void setup()
 {
+  wifi_station_set_hostname("NeoDisplay");
   pinMode(LED_MAIN, OUTPUT);
   digitalWrite(LED_MAIN, HIGH);
   Serial.begin(115200);

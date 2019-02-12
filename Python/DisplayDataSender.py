@@ -1,34 +1,10 @@
 import mt
 import socket
+from Display import Display
 from time import sleep
 
 sock = socket.socket(socket.AF_INET, # Internet
                      socket.SOCK_DGRAM) # UDP
-
-class Display:
-
-    NUM_PIXELS = 256
-
-    UPPER_LEFT = 0
-    LOWER_LEFT = 7
-    UPPER_RIGHT = 255
-    LOWER_RIGHT = 248
-
-    WIDTH = 32
-    HEIGHT = 8
-
-
-    @staticmethod
-    def index_from_xy(x, y):
-        offset_y = 0
-        if Display.UPPER_LEFT == 0:
-            offset_y = (y if x % 2 == 0 else Display.LOWER_LEFT -y)
-        output = x * (Display.LOWER_LEFT + 1) + offset_y
-        if output < 0:
-            return 0
-        elif output >= 256:
-            return 255
-        return output
 
 
 class DisplayDataSender:
@@ -64,14 +40,13 @@ class DisplayDataSender:
         self.send_packet(header, payload)
 
     def send_packet(self, header, payload):
+        sock.sendto(bytes(header / payload), (self.dest, self.port))
 
-        sock.sendto(str(header / payload), (self.dest, self.port))
-
-    def clear(self):
+    def clear(self, layer=1):
 
         payload = mt.Command(
             Command=mt.DisplayEnums.Command.CLEAR,
-            Value=0
+            Value=layer
         )
 
         header = mt.Header(
@@ -150,7 +125,51 @@ class DisplayDataSender:
 
         self.send_packet(header, payload)
 
-    def update(self):
+    def update(self, pixels: [Display.Pixel]):
+
+        pixels_out = []
+
+        for pixel in pixels:
+            pixel_out = mt.Pixel(Index=Display.index_from_xy(pixel.x, pixel.y),
+                                 Red=pixel.r,
+                                 Green=pixel.g,
+                                 Blue=pixel.b)
+            pixels_out.append(pixel_out)
+
+        payload = mt.Pixels(
+            TypeOfUpdate=mt.DisplayEnums.DisplayUpdate.FULL,
+            Layer=mt.DisplayEnums.Layer.FOREGROUND,
+            NumberOfPixelUpdates=len(pixels_out),
+            PixelData=pixels_out
+        )
+
+        header = mt.Header(
+            MessageDataType=mt.DisplayEnums.PacketType.DISPLAY_INPUT,  # 1 is command
+            MessageDataSize=len(payload)
+        )
+
+        self.send_packet(header, payload)
+
+    def set_brightness(self, value):
+
+        if value > 255:
+            value = 255
+        elif value < 0:
+            value = 0
+
+        payload = mt.Command(
+            Command=mt.DisplayEnums.Command.BRIGHTNESS,
+            Value=value
+        )
+
+        header = mt.Header(
+            MessageDataType=mt.DisplayEnums.PacketType.COMMAND,
+            MessageDataSize=len(payload)
+        )
+
+        self.send_packet(header, payload)
+
+    def update2(self):
 
         payloadMode = mt.Mode(
             Mode=2
@@ -171,10 +190,7 @@ class DisplayDataSender:
             MessageDataSize=len(payloadCommand)
         )
 
-        payloadCommandBrightness = mt.Command(
-            Command=mt.DisplayEnums.Command.BRIGHTNESS,
-            Value=30
-        )
+
 
         pixels = []
         pixels.append(mt.Pixel(Index=0))
@@ -194,7 +210,7 @@ class DisplayDataSender:
         )
 
         #sock.sendto(str(headerMode / payloadMode), (self.dest, self.port))
-        #sock.sendto(str(headerCommand / payloadCommandBrightness), (self.dest, self.port))
+
 
         #return
         #sock.sendto(str(headerCommand / payloadCommand), (self.dest, self.port))
