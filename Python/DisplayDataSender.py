@@ -85,11 +85,12 @@ class DisplayDataSender:
         #payload.show()
         self.send_packet(header, payload)
 
-    def send_command(self, command,  value=0):
+    def send_command(self, command: mt.DisplayEnums.Command, value=0, value2=0):
 
         payload = mt.Command(
             Command=command,
-            Value=value
+            Value=value,
+            Value2=value2
         )
 
         header = mt.Header(
@@ -157,17 +158,15 @@ class DisplayDataSender:
         elif value < 0:
             value = 0
 
-        payload = mt.Command(
-            Command=mt.DisplayEnums.Command.BRIGHTNESS,
-            Value=value
-        )
+        self.send_command(mt.DisplayEnums.Command.BRIGHTNESS, value)
 
-        header = mt.Header(
-            MessageDataType=mt.DisplayEnums.PacketType.COMMAND,
-            MessageDataSize=len(payload)
-        )
+    def set_layer_brightness(self, layer: mt.DisplayEnums.Layer, value):
+        if value > 255:
+            value = 255
+        elif value < 0:
+            value = 0
 
-        self.send_packet(header, payload)
+        self.send_command(mt.DisplayEnums.Command.LAYER_BRIGHTNESS, layer, value)
 
     def update2(self):
 

@@ -31,10 +31,11 @@ class DisplayEnums:
     class Command:
         CLEAR = 0
         BRIGHTNESS = 1
-        TEST = 2
-        RENEW_TIME = 3
-        RESET_WIFI = 4
-        CONFIGURE_WIFI = 5
+        LAYER_BRIGHTNESS = 2
+        TEST = 3
+        RENEW_TIME = 4
+        RESET_WIFI = 5
+        CONFIGURE_WIFI = 6
 
     class DisplayUpdate:
         PARTIAL = 0
@@ -76,7 +77,8 @@ class Command(scapy.Packet):
     name = "Command"
     fields_desc = [
         scapy.ByteField("Command", 0x00),
-        scapy.ByteField("Value", 0x00)
+        scapy.ByteField("Value", 0x00),
+        scapy.ByteField("Value2", 0x00)
     ]
 
 

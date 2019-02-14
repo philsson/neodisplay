@@ -10,6 +10,7 @@ Display::Display()
 , m_brightness(100)
 , m_layers(3, Display::PixelVec(NUM_PIXELS, Pixel()))
 , m_layersGoalState(3, Display::PixelVec(NUM_PIXELS, Pixel()))
+, m_layerBrightness(3, 255)
 , m_mode(CONNECTING)
 , m_effect(FADE)
 , m_width(WIDTH)
@@ -73,14 +74,17 @@ bool Display::draw()
     {
         return false;
     }
-    static const float d = 0.06f; // Update rate [0,1]
+    static const float d = 0.06f; // Update rate in range [0,1]
     bool fullyActuated = true;
-    for (int i = 0; i < m_layers.size() /* and m_layersGoalState.size() */; i++)
+    for (int i = 0; i < m_layers.size() /* same size as m_layersGoalState.size() */; i++)
     {
+        float layerBrightness = float(m_layerBrightness[i])/255.0;
+
         for (int k = 0; k < m_layers[i].size(); k++)
         {
             Pixel& currentState = m_layers[i][k];
             Pixel& goalState = m_layersGoalState[i][k];
+            goalState = goalState * layerBrightness;
             
             if (currentState != goalState)
             {
@@ -136,6 +140,26 @@ void Display::setBrightness(const uint8_t b)
     Adafruit_NeoPixel::setBrightness(b);
 }
 
+void Display::setLayerBrightness(const uint8_t layer, const uint8_t b)
+{
+    m_layerBrightness[layer] = b;
+}
+
+void Display::restoreLayerBrightness(const Display::Layer layer)
+{
+    if (layer == Display::Layer::ALL)
+    {
+        for (int i = 0; i < 3; i++)
+        {
+            m_layerBrightness[i] = 255;
+        }
+    }
+    else
+    {
+        m_layerBrightness[layer] = 255;
+    }
+}
+
 void Display::clear(Display::Layer layer)
 {
     if (layer == Layer::ALL)
@@ -184,10 +208,15 @@ void Display::test()
         delay(t);
     }
 
-    for(int i = 0; i < 100; i++)
+    for(int i = 0;; i++)
     {
         if (draw())
         {
+            break;
+        }
+        if (i >= 100)
+        {
+            Serial.println("Timeout!. Breaking...");
             break;
         }
         delay(t);
@@ -328,7 +357,7 @@ const bool Display::almostEqualPixels(const Pixel& a, const Pixel& b) const
     // TODO: For some reason this condition does not seem satisfied for all cases 
     //       even after a long time. For example in "disco()" where if using this
     //       result as a condition we stay in an endless loop
-    static const uint8_t t = 2;
+    static const uint8_t t = 10;
     if (abs(a.r - b.r) > t || abs(a.g - b.g) > t || abs(a.b - b.b) > t  )
     {
         return false;

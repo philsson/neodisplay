@@ -132,9 +132,15 @@ bool DisplayParser::parseCommand(const int index, const int packetSize, const ui
         break;
     case 1:
         commandPkt.value = byteIn;
-        Serial.printf("Command received: %d, %d\n", commandPkt.command, commandPkt.value);
+        break;
+    case 2:
+        commandPkt.second_value = byteIn;
+        Serial.printf("Command received: %d, %d, %d\n", 
+                      commandPkt.command, 
+                      commandPkt.value, 
+                      commandPkt.second_value);
 
-        actuateCommand((Command)commandPkt.command, commandPkt.value);
+        actuateCommand((Command)commandPkt.command, commandPkt.value, commandPkt.second_value);
         return true;
         break;
     }
@@ -197,7 +203,7 @@ bool DisplayParser::parseDisplay(const int index, const int packetSize, const ui
     return false;
 }
 
-void DisplayParser::actuateCommand(Command command, const uint8_t value)
+void DisplayParser::actuateCommand(Command command, const uint8_t value, const uint8_t value2)
 {
     switch (command)
     {
@@ -206,6 +212,9 @@ void DisplayParser::actuateCommand(Command command, const uint8_t value)
         break;
     case BRIGHTNESS:
         m_display.setBrightness(value);
+        break;
+    case LAYER_BRIGHTNESS:
+        m_display.setLayerBrightness(value, value2);
         break;
     case TEST:
         m_display.test();

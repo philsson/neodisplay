@@ -18,6 +18,7 @@ enum PacketType {
 enum Command {
     CLEAR = 0, // Empty all but the permanent part
     BRIGHTNESS,
+    LAYER_BRIGHTNESS,
     TEST,
     RENEW_TIME,
     RESET_WIFI,
@@ -54,6 +55,7 @@ typedef struct PacketEffect {
 typedef struct PacketCommand {
     uint8_t command;
     uint8_t value;
+    uint8_t second_value;
 } __attribute__ ((__packed__));
 
 typedef struct PacketDisplayUpdate {
@@ -80,7 +82,7 @@ private:
 
     bool parseDisplay(const int index, const int packetSize, const uint8_t byteIn);
 
-    void actuateCommand(Command command, const uint8_t value);
+    void actuateCommand(Command command, const uint8_t value, const uint8_t value2);
 
     void actuateDisplay(DisplayUpdate update, const Display::PixelVec& pixels, Display::Layer layer);
 

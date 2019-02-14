@@ -175,6 +175,16 @@ public:
     //! @b: Brightness in range [0, 255]
     void setBrightness(const uint8_t b);
 
+    //! Set the relative brightness of a layer
+    //! as a factor of the overall brightness
+    //! @layer: The layer
+    //! @b: Brightness in range [0, 255]
+    void setLayerBrightness(const uint8_t layer, const uint8_t b);
+
+    //! Restore brightness of a layer to max (255)
+    //! @layer: The layer to restore. Can also be "ALL"
+    void restoreLayerBrightness(const Display::Layer layer);
+
     //! Clear set layer. "draw()" needs
     //! to be ran afterwards to execute
     //! @layer: Layer to clear
@@ -227,6 +237,8 @@ private:
     // TODO: Rename m_layers to current state?
     PixelVecVec m_layers;
     PixelVecVec m_layersGoalState;
+
+    std::vector<uint8_t> m_layerBrightness;
 
     Mode m_mode;
     Effect m_effect;
