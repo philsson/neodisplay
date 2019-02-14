@@ -28,7 +28,9 @@ WiFiStatus wifiStatus = CONNECTING;
 Settings* pConfig = Settings::Instance();
 WiFiManager* pWiFiManager = pConfig->getWiFiManager();
 
-Ticker ticker, clockTicker;
+Ticker mainTicker, clockTicker;
+bool mainTaskReady = false;
+bool clockTaskReady = false;
 
 WiFiUDP Udp;
 WiFiUDP ntpUDP;
@@ -38,6 +40,30 @@ Clock clock(ntpUDP, TIMEZONE);
 Display display;
 
 DisplayParser displayParser(display, clock);
+
+// For calculation of CPU Load
+uint16_t counter = 0;
+const uint16_t maxLoad = 46300; // uint16 increments in a sec
+
+//! Ran every LOOPTIME ms
+void mainISR()
+{
+  mainTaskReady = true;
+}
+
+//! Ran every s
+void clockISR()
+{
+  #ifdef MEASURE_CPU
+    static float mean = 0.0f, peak = 0.0f;
+    float usage = float(maxLoad-counter)/(float)maxLoad;
+    if (usage > peak) peak = usage;
+    mean = (float)mean*0.7 + usage*0.3;
+    Serial.printf("CPU usage: %.2f. Peak: %.2f, counter: %d\n", mean, peak, counter);
+    counter = 0;
+  #endif
+  clockTaskReady = true;
+}
 
 void flipLED()
 {
@@ -60,7 +86,7 @@ void configWifiCallback(WiFiManager *pWifiManager)
   wifiStatus = AP;
 }
 
-void timerCallback()
+void mainWorker()
 {
   // Toggle the LED on the NodeMCU
   flipLED();
@@ -88,12 +114,6 @@ void timerCallback()
   display.draw();
 }
 
-void clockISR()
-{
-  clock.tick();
-  //Serial.printf("%d:%d:%d\n", clock.getTime().hour, clock.getTime().minute, clock.getTime().second);
-}
-
 void setup()
 {
   wifi_station_set_hostname("NeoDisplay");
@@ -107,7 +127,7 @@ void setup()
   display.setEffect(Display::Effect::FADE);
 
   clock.begin();
-  ticker.attach_ms(LOOPTIME, timerCallback);
+  mainTicker.attach_ms(LOOPTIME, mainISR);
   
   /* WiFi Setup */
   WiFi.mode(WIFI_STA);
@@ -163,6 +183,19 @@ void setup()
 
 void loop()
 {
+  counter++;
+
+  if (clockTaskReady)
+  {
+    clockTaskReady = false;
+    clock.tick();
+    //Serial.printf("%d:%d:%d\n", clock.getTime().hour, clock.getTime().minute, clock.getTime().second);
+  } 
+  if (mainTaskReady)
+  {
+    mainTaskReady = false;
+    mainWorker();
+  }
   ArduinoOTA.handle();
 
   int packetSize = Udp.parsePacket();

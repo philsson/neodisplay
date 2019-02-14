@@ -11,6 +11,11 @@
 /* WiFi / Network settings */
 // Default incoming UDP port 4210
 
+/* CPU Measurement 
+ * Uncomment to get CPU measurements
+ */
+#define MEASURE_CPU
+
 /* Display 
  * 0,0 is in the upper left corner
  * Width is on the x-axis
