@@ -1,7 +1,7 @@
 #include "mt.h"
 #include "config.h"
 
-DisplayParser::DisplayParser(Display& display, Clock& clock)
+DisplayParser::DisplayParser(MyDisplay& display, Clock& clock)
 : m_display(display)
 , m_clock(clock)
 {}
@@ -97,7 +97,7 @@ bool DisplayParser::parseMode(const int index, const int packetSize, const uint8
 
     Serial.printf("Mode received. Mode: %d\n", modePkt.mode);
 
-    m_display.setMode((Display::Mode)modePkt.mode);
+    m_display.setMode((MyDisplay::Mode)modePkt.mode);
 
     return true;
 }
@@ -113,7 +113,7 @@ bool DisplayParser::parseEffect(const int index, const int packetSize, const uin
         break;
     case 1:
         Serial.printf("Effect received. Effect: %d\n", effectPkt.effect);
-        m_display.setEffect((Display::Effect)effectPkt.effect, byteIn /* permanent */);
+        m_display.setEffect((MyDisplay::Effect)effectPkt.effect, byteIn /* permanent */);
         return true;
         break;
     }
@@ -152,7 +152,7 @@ bool DisplayParser::parseDisplay(const int index, const int packetSize, const ui
     static PacketDisplayUpdate displayPkt;
     static uint8_t pixelArr[4];
     //static Display::Pixel pixel;
-    static Display::Pixel* pPixel = (Display::Pixel*)pixelArr;
+    static MyDisplay::Pixel* pPixel = (MyDisplay::Pixel*)pixelArr;
 
     //Serial.printf("DisplayPart Index: %d, pixels: %d\n", index, displayPkt.pixels.size());
     switch (index)
@@ -194,7 +194,7 @@ bool DisplayParser::parseDisplay(const int index, const int packetSize, const ui
         {
             //Serial.printf("Display received. Size %d\n", displayPkt.pixels.size());
             //Serial.printf("First pixel with index %d: %d, %d, %d\n", displayPkt.pixels[0].index, displayPkt.pixels[0].r, displayPkt.pixels[0].g, displayPkt.pixels[0].b);
-            actuateDisplay((DisplayUpdate)displayPkt.typeOfUpdate, displayPkt.pixels, (Display::Layer)displayPkt.layer);
+            actuateDisplay((DisplayUpdate)displayPkt.typeOfUpdate, displayPkt.pixels, (MyDisplay::Layer)displayPkt.layer);
             return true;
         }
         break;
@@ -231,8 +231,8 @@ void DisplayParser::actuateCommand(Command command, const uint8_t value, const u
     }
 }
 
-void DisplayParser::actuateDisplay(DisplayUpdate update, const Display::PixelVec& pixels, Display::Layer layer)
+void DisplayParser::actuateDisplay(DisplayUpdate update, const MyDisplay::PixelVec& pixels, MyDisplay::Layer layer)
 {
     // TODO: Scary cast to "update". Same is declared in both Display.h and mt.h
-    m_display.setPixels(pixels, layer, (Display::Update)update);
+    m_display.setPixels(pixels, layer, (MyDisplay::Update)update);
 }

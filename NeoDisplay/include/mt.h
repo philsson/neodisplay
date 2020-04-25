@@ -5,7 +5,7 @@
 
 #include <Arduino.h>
 #include <vector>
-#include "display.h"
+#include "mydisplay.h"
 #include "clock.h"
 
 enum PacketType {
@@ -37,38 +37,38 @@ enum ParseMode {
     PAYLOAD,
 };
 
-typedef struct PacketHeader {
+struct PacketHeader {
     int32_t magicWord;
     uint8_t packetType;
     uint16_t packetSize;
 
 } __attribute__ ((__packed__));
 
-typedef struct PacketMode {
+struct PacketMode {
     uint8_t mode;
 } __attribute__ ((__packed__));
 
-typedef struct PacketEffect {
+struct PacketEffect {
     uint8_t effect;
 } __attribute__ ((__packed__));
 
-typedef struct PacketCommand {
+struct PacketCommand {
     uint8_t command;
     uint8_t value;
     uint8_t second_value;
 } __attribute__ ((__packed__));
 
-typedef struct PacketDisplayUpdate {
+struct PacketDisplayUpdate {
     uint8_t typeOfUpdate;
     uint8_t layer;
     uint16_t numOfPixels;
-    std::vector<Display::Pixel> pixels;
+    std::vector<MyDisplay::Pixel> pixels;
 } __attribute__ ((__packed__));
 
 class DisplayParser
 {
 public:
-    DisplayParser(Display& display, Clock& clock);
+    DisplayParser(MyDisplay& display, Clock& clock);
 
     bool parse(const uint8_t byteIn);
 
@@ -84,9 +84,9 @@ private:
 
     void actuateCommand(Command command, const uint8_t value, const uint8_t value2);
 
-    void actuateDisplay(DisplayUpdate update, const Display::PixelVec& pixels, Display::Layer layer);
+    void actuateDisplay(DisplayUpdate update, const MyDisplay::PixelVec& pixels, MyDisplay::Layer layer);
 
-    Display& m_display;
+    MyDisplay& m_display;
 
     Clock& m_clock;
 };

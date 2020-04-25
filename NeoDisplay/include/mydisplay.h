@@ -19,10 +19,10 @@
 //! Configuration in Config.h
 //! The display uses the Adafruit NeoPixel library to draw
 //! First set state of the display, then draw
-class Display : public Adafruit_NeoPixel
+class MyDisplay : public Adafruit_NeoPixel
 {
 public:
-    Display();
+    MyDisplay();
 
     enum Mode {
         NORMAL = 0,
@@ -51,7 +51,7 @@ public:
     };
 
     //! Content of one pixel
-    typedef struct Pixel {
+    struct Pixel {
         uint8_t index;
         uint8_t r, g, b;
 
@@ -183,7 +183,7 @@ public:
 
     //! Restore brightness of a layer to max (255)
     //! @layer: The layer to restore. Can also be "ALL"
-    void restoreLayerBrightness(const Display::Layer layer);
+    void restoreLayerBrightness(const MyDisplay::Layer layer);
 
     //! Clear set layer. "draw()" needs
     //! to be ran afterwards to execute

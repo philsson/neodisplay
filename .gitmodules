@@ -1,0 +1,9 @@
+[submodule "NeoDisplay/lib/WiFiManager"]
+	path = NeoDisplay/lib/WiFiManager
+	url = https://github.com/tzapu/WiFiManager.git
+[submodule "NeoDisplay/lib/Adafruit_NeoPixel"]
+	path = NeoDisplay/lib/Adafruit_NeoPixel
+	url = https://github.com/adafruit/Adafruit_NeoPixel.git
+[submodule "NeoDisplay/lib/NTPClient"]
+	path = NeoDisplay/lib/NTPClient
+	url = https://github.com/arduino-libraries/NTPClient.git

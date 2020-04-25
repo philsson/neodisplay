@@ -1,6 +1,6 @@
 #pragma once
 
-#include <NTPClient.h>
+#include "NTPClient.h"
 
 class Clock
 {
@@ -21,7 +21,7 @@ public:
         , minute(minute_)
         , second(second_)
         {}
-    };
+    } MyTime;
 
     void begin();
 

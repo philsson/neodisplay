@@ -11,7 +11,7 @@
 // Includes from this project
 #include "clock.h"
 #include "config.h"
-#include "display.h"
+#include "mydisplay.h"
 #include "graphics.h"
 #include "mt.h"
 
@@ -35,11 +35,11 @@ bool clockTaskReady = false;
 WiFiUDP Udp;
 WiFiUDP ntpUDP;
 
-Clock clock(ntpUDP, TIMEZONE);
+Clock myClock(ntpUDP, TIMEZONE);
 
-Display display;
+MyDisplay display;
 
-DisplayParser displayParser(display, clock);
+DisplayParser displayParser(display, myClock);
 
 // For calculation of CPU Load
 uint16_t counter = 0;
@@ -93,7 +93,7 @@ void mainWorker()
 
   switch (display.getMode())
   {
-  case Display::Mode::CONNECTING: // Animate WiFi
+  case MyDisplay::Mode::CONNECTING: // Animate WiFi
     if (wifiStatus == CONNECTING)
     {
       plotWiFi(display);
@@ -103,11 +103,11 @@ void mainWorker()
       plotWiFi(display, true, wifiStatus == CONNECTED);
     }
     break;  
-  case Display::Mode::CLOCK:
+  case MyDisplay::Mode::CLOCK:
     // Repaint the screen with new clock update
-    plotClock(clock, display);
+    plotClock(myClock, display);
     break;
-  case Display::Mode::NORMAL:
+  case MyDisplay::Mode::NORMAL:
   default:
     break;
   }
@@ -124,9 +124,9 @@ void setup()
   
   display.begin();
   display.setBrightness(15);
-  display.setEffect(Display::Effect::FADE);
+  display.setEffect(MyDisplay::Effect::FADE);
 
-  clock.begin();
+  myClock.begin();
   mainTicker.attach_ms(LOOPTIME, mainISR);
   
   /* WiFi Setup */
@@ -161,9 +161,9 @@ void setup()
   }
 
   delay(1e3); // Let wifi animation stay for a while
-  display.setMode(Display::Mode::NORMAL);
+  display.setMode(MyDisplay::Mode::NORMAL);
   delay(1e2); // Wait for last animation plot before we clear
-  display.clear(Display::Layer::ALL);
+  display.clear(MyDisplay::Layer::ALL);
 
   display.test();
   display.disco();
@@ -171,13 +171,13 @@ void setup()
 
   /* Read EEPROM */
   pConfig->load();
-  Serial.printf("Effect: %d\n", (Display::Effect)pConfig->display.effect);
-  display.setEffect((Display::Effect)pConfig->display.effect);
+  Serial.printf("Effect: %d\n", (MyDisplay::Effect)pConfig->display.effect);
+  display.setEffect((MyDisplay::Effect)pConfig->display.effect);
   pConfig->print();
 
-  display.setMode(Display::Mode::CLOCK);
+  display.setMode(MyDisplay::Mode::CLOCK);
   
-  clock.update();
+  myClock.update();
   clockTicker.attach_ms(1e3, clockISR);
 }
 
@@ -188,7 +188,7 @@ void loop()
   if (clockTaskReady)
   {
     clockTaskReady = false;
-    clock.tick();
+    myClock.tick();
     //Serial.printf("%d:%d:%d\n", clock.getTime().hour, clock.getTime().minute, clock.getTime().second);
   } 
   if (mainTaskReady)

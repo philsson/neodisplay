@@ -1,8 +1,12 @@
 
 *.pyc
-.vscode/arduino.json
-.vscode/c_cpp_properties.json
 Python/.idea/*
 Python/venv
 Notes/*
-.vscode/settings.json
+.pio
+NeoDisplay/.vscode/.browse.c_cpp.db*
+NeoDisplay/.vscode/c_cpp_properties.json
+NeoDisplay/.vscode/launch.json
+NeoDisplay/.vscode/ipch
+
+

@@ -1,15 +1,15 @@
-#include "display.h"
+#include "mydisplay.h"
 
 
-Display::Display()
+MyDisplay::MyDisplay()
 //   NEO_KHZ800  800 KHz bitstream (most NeoPixel products w/WS2812 LEDs)
 //   NEO_KHZ400  400 KHz (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //   NEO_GRB     Pixels are wired for GRB bitstream (most NeoPixel products)
 //   NEO_RGB     Pixels are wired for RGB bitstream (v1 FLORA pixels, not v2)
 : Adafruit_NeoPixel(NUM_PIXELS, PIN_PIXELS, NEO_GRB + NEO_KHZ800)
 , m_brightness(100)
-, m_layers(3, Display::PixelVec(NUM_PIXELS, Pixel()))
-, m_layersGoalState(3, Display::PixelVec(NUM_PIXELS, Pixel()))
+, m_layers(3, MyDisplay::PixelVec(NUM_PIXELS, Pixel()))
+, m_layersGoalState(3, MyDisplay::PixelVec(NUM_PIXELS, Pixel()))
 , m_layerBrightness(3, 255)
 , m_mode(CONNECTING)
 , m_effect(FADE)
@@ -21,7 +21,7 @@ Display::Display()
     CreateMutex(&m_mutexDraw);
 }
 
-void Display::begin()
+void MyDisplay::begin()
 {
     for (LayersIter lIter = m_layers.begin(); lIter != m_layers.end(); lIter++)
     {
@@ -43,17 +43,17 @@ void Display::begin()
     Adafruit_NeoPixel::begin();
 }
 
-void Display::setMode(Mode mode)
+void MyDisplay::setMode(Mode mode)
 {
     m_mode = mode;
 }
 
-Display::Mode Display::getMode()
+MyDisplay::Mode MyDisplay::getMode()
 {
     return m_mode;
 }
 
-void Display::setEffect(Effect effect, bool permanent)
+void MyDisplay::setEffect(Effect effect, bool permanent)
 {
     m_effect = effect;
     if (permanent)
@@ -63,12 +63,12 @@ void Display::setEffect(Effect effect, bool permanent)
     }
 }
 
-Display::Effect Display::getEffect()
+MyDisplay::Effect MyDisplay::getEffect()
 {
     return m_effect;
 }
 
-bool Display::draw()
+bool MyDisplay::draw()
 {
     if (!GetMutex(&m_mutexDraw))
     {
@@ -76,11 +76,11 @@ bool Display::draw()
     }
     static const float d = 0.06f; // Update rate in range [0,1]
     bool fullyActuated = true;
-    for (int i = 0; i < m_layers.size() /* same size as m_layersGoalState.size() */; i++)
+    for (unsigned int i = 0; i < m_layers.size() /* same size as m_layersGoalState.size() */; i++)
     {
         float layerBrightness = float(m_layerBrightness[i])/255.0;
 
-        for (int k = 0; k < m_layers[i].size(); k++)
+        for (unsigned int k = 0; k < m_layers[i].size(); k++)
         {
             Pixel& currentState = m_layers[i][k];
             Pixel& goalState = m_layersGoalState[i][k];
@@ -134,20 +134,20 @@ bool Display::draw()
     return fullyActuated;
 }
 
-void Display::setBrightness(const uint8_t b)
+void MyDisplay::setBrightness(const uint8_t b)
 {
     m_brightness = constrain(b, 0, MAX_BRIGHTNESS);
     Adafruit_NeoPixel::setBrightness(b);
 }
 
-void Display::setLayerBrightness(const uint8_t layer, const uint8_t b)
+void MyDisplay::setLayerBrightness(const uint8_t layer, const uint8_t b)
 {
     m_layerBrightness[layer] = b;
 }
 
-void Display::restoreLayerBrightness(const Display::Layer layer)
+void MyDisplay::restoreLayerBrightness(const MyDisplay::Layer layer)
 {
-    if (layer == Display::Layer::ALL)
+    if (layer == MyDisplay::Layer::ALL)
     {
         for (int i = 0; i < 3; i++)
         {
@@ -160,7 +160,7 @@ void Display::restoreLayerBrightness(const Display::Layer layer)
     }
 }
 
-void Display::clear(Display::Layer layer)
+void MyDisplay::clear(MyDisplay::Layer layer)
 {
     if (layer == Layer::ALL)
     {
@@ -176,7 +176,7 @@ void Display::clear(Display::Layer layer)
     Adafruit_NeoPixel::clear();
 }
 
-void Display::test()
+void MyDisplay::test()
 {
     static const uint8_t t = 1000/LOOPTIME;
     int x;
@@ -225,7 +225,7 @@ void Display::test()
     clear();
 }
 
-void Display::disco()
+void MyDisplay::disco()
 {
   static const uint8_t t = 1000/LOOPTIME;
 
@@ -253,8 +253,8 @@ void Display::disco()
   }
 }
 
-void Display::setPixel(Display::Pixel pixel, 
-                       Display::Layer layer)
+void MyDisplay::setPixel(MyDisplay::Pixel pixel, 
+                       MyDisplay::Layer layer)
 {
     if (pixel.index <= NUM_PIXELS && layer != Layer::ALL)
     {
@@ -262,29 +262,29 @@ void Display::setPixel(Display::Pixel pixel,
     }
 }
 
-void Display::setPixel(uint8_t x, 
+void MyDisplay::setPixel(uint8_t x, 
                        uint8_t y, 
                        uint32_t color, 
-                       Display::Layer layer)
+                       MyDisplay::Layer layer)
 {
     uint8_t index = getPixelFromXY(x, y);
     setPixel(pixelFromPackedColor((uint8_t)index, color), layer);
 }
 
-void Display::setPixel(uint8_t x, 
+void MyDisplay::setPixel(uint8_t x, 
                        uint8_t y, 
                        uint8_t r, 
                        uint8_t g, 
                        uint8_t b, 
-                       Display::Layer layer)
+                       MyDisplay::Layer layer)
 {
     int index = getPixelFromXY(x, y);
-    setPixel(Display::Pixel(index, r, g, b), layer);
+    setPixel(MyDisplay::Pixel(index, r, g, b), layer);
 }
 
-void Display::setPixels(Display::PixelVec pixels, 
-                        Display::Layer layer, 
-                        Display::Update update)
+void MyDisplay::setPixels(MyDisplay::PixelVec pixels, 
+                        MyDisplay::Layer layer, 
+                        MyDisplay::Update update)
 {
     if (update == FULL)
     {
@@ -296,10 +296,10 @@ void Display::setPixels(Display::PixelVec pixels,
     }
 }
 
-void Display::setRow(uint8_t x, 
+void MyDisplay::setRow(uint8_t x, 
                      uint32_t color, 
-                     Display::Layer layer,
-                     Display::Update update)
+                     MyDisplay::Layer layer,
+                     MyDisplay::Update update)
 {
     if (update == FULL)
     {
@@ -312,19 +312,18 @@ void Display::setRow(uint8_t x,
     }
 }
 
-void Display::setRow(uint8_t x, 
+void MyDisplay::setRow(uint8_t x, 
                      uint8_t r, 
                      uint8_t g, 
                      uint8_t b, 
-                     Display::Layer layer,
-                     Display::Update update)
+                     MyDisplay::Layer layer,
+                     MyDisplay::Update update)
 {
     setRow(x, Adafruit_NeoPixel::Color(r, g, b), layer, update);
 }
 
-uint8_t Display::getPixelFromXY(uint8_t x, uint8_t y)
+uint8_t MyDisplay::getPixelFromXY(uint8_t x, uint8_t y)
 {
-    int index = 0;
     if (UPPER_LEFT == 0)
     {
         uint8_t offsetY = (x % 2 == 0 ? y : LOWER_LEFT - y);
@@ -333,15 +332,15 @@ uint8_t Display::getPixelFromXY(uint8_t x, uint8_t y)
     return 0;
 }
 
-Display::Pixel Display::pixelFromPackedColor(uint8_t index, uint32_t color)
+MyDisplay::Pixel MyDisplay::pixelFromPackedColor(uint8_t index, uint32_t color)
 {
-    return Display::Pixel(index,
+    return MyDisplay::Pixel(index,
                          (uint8_t)(color >> 16),
                          (uint8_t)(color >>  8),
                          (uint8_t)color);
 }
 
-void Display::clearVec(PixelVec& pixelVec)
+void MyDisplay::clearVec(PixelVec& pixelVec)
 {
     // This should have worked?
     // pixelVec.assign(pixelVec.size(), Pixel());
@@ -352,7 +351,7 @@ void Display::clearVec(PixelVec& pixelVec)
     }
 }
 
-const bool Display::almostEqualPixels(const Pixel& a, const Pixel& b) const
+const bool MyDisplay::almostEqualPixels(const Pixel& a, const Pixel& b) const
 {
     // TODO: For some reason this condition does not seem satisfied for all cases 
     //       even after a long time. For example in "disco()" where if using this

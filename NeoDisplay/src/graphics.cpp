@@ -4,9 +4,9 @@
 using namespace fonts::std;
 using namespace fonts::drawings;
 
-void plotNum(Display& display, uint8_t num, uint8_t xPos, uint8_t yPos, uint32_t color)
+void plotNum(MyDisplay& display, uint8_t num, uint8_t xPos, uint8_t yPos, uint32_t color)
 {
-    static const uint8_t xOffset = sizeof(byte) - FONT_WIDTH;
+    //static const uint8_t xOffset = sizeof(byte) - FONT_WIDTH;
     
     for (uint8_t y = 0; y < FONT_HEIGHT; y++)
     {
@@ -15,26 +15,26 @@ void plotNum(Display& display, uint8_t num, uint8_t xPos, uint8_t yPos, uint32_t
         {
             if (row >> (FONT_WIDTH - 1 - x) & 0x01)
             {
-                display.setPixel(xPos + x, yPos + y, color, Display::MIDLAYER);
+                display.setPixel(xPos + x, yPos + y, color, MyDisplay::MIDLAYER);
             }
         }
     }
 }
 
-void plotColumn(Display& display, uint8_t column, uint8_t xPos, uint32_t color)
+void plotColumn(MyDisplay& display, uint8_t column, uint8_t xPos, uint32_t color)
 {
     for (uint8_t y = 0; y < min(8, FONT_HEIGHT); y++)
     {
         if (column >> (FONT_HEIGHT - 1 - y) & 0x01)
         {
-            display.setPixel(xPos, y, color, Display::MIDLAYER);
+            display.setPixel(xPos, y, color, MyDisplay::MIDLAYER);
         }
     }
 }
 
-void plotClock(const Clock& clock, Display& display)
+void plotClock(const Clock& clock, MyDisplay& display)
 {
-    display.clear(Display::MIDLAYER);
+    display.clear(MyDisplay::MIDLAYER);
     const Clock::MyTime time = clock.getTime();
 
     static const uint8_t separator = B01100110;
@@ -58,16 +58,16 @@ void plotClock(const Clock& clock, Display& display)
     }
 }
 
-void plotArr(Display& display,
+void plotArr(MyDisplay& display,
              const byte arr[],
              uint8_t width, 
              uint8_t height,
              uint8_t xPos, 
              uint8_t yPos, 
              uint32_t color,
-             Display::Layer layer)
+             MyDisplay::Layer layer)
 {
-    static const uint8_t xOffset = sizeof(byte) - width;
+    //static const uint8_t xOffset = sizeof(byte) - width;
     
     for (uint8_t y = 0; y < height; y++)
     {
@@ -82,10 +82,10 @@ void plotArr(Display& display,
     }
 }
 
-bool plotWiFi(Display& display, bool doneConnecting, bool connected)
+bool plotWiFi(MyDisplay& display, bool doneConnecting, bool connected)
 {
     // TODO: Write the status symbol (Green Tick and Red X)
-    static const Display::Layer layer = Display::Layer::MIDLAYER;
+    static const MyDisplay::Layer layer = MyDisplay::Layer::MIDLAYER;
     display.clear(layer);
     //display.clear(Display::Layer::ALL);
     static uint8_t turn = 0;
