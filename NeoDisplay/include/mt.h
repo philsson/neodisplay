@@ -41,7 +41,6 @@ struct PacketHeader {
     int32_t magicWord;
     uint8_t packetType;
     uint16_t packetSize;
-
 } __attribute__ ((__packed__));
 
 struct PacketMode {
@@ -63,7 +62,7 @@ struct PacketDisplayUpdate {
     uint8_t layer;
     uint16_t numOfPixels;
     std::vector<MyDisplay::Pixel> pixels;
-} __attribute__ ((__packed__));
+};
 
 class DisplayParser
 {
