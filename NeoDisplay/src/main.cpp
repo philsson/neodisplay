@@ -147,7 +147,7 @@ void setup()
 
   Udp.begin(pConfig->network.port);
 
-  String hostname = "NeoDisplayOTA";
+  String hostname = "NeoDisplay";
   ArduinoOTA.setHostname((const char *)hostname.c_str());
   ArduinoOTA.begin();
 
